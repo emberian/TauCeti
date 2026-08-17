@@ -189,6 +189,18 @@ def ContDiffAlongCoordinate (f : _root_.UnitAddTorus d → ℝ) (i : d) : Prop :
   ∀ y : CoordinateComplement d i, ContDiff ℝ 1 (coordinateSliceLift f i y)
 
 omit [Fintype d] in
+/-- Establish coordinatewise `C¹` regularity from the explicit real lifts through
+`coordinateSplit`. -/
+theorem contDiffAlongCoordinate_of_coordinateSplit
+    (f : _root_.UnitAddTorus d → ℝ) (i : d)
+    (h : ∀ y : CoordinateComplement d i,
+      ContDiff ℝ 1 (fun r : ℝ ↦
+        f ((coordinateSplit i).symm ((r : _root_.UnitAddCircle), y)))) :
+    ContDiffAlongCoordinate f i := by
+  intro y
+  exact h y
+
+omit [Fintype d] in
 /-- Constant scalar fields are continuously differentiable along every torus coordinate. -/
 theorem contDiffAlongCoordinate_const (c : ℝ) (i : d) :
     ContDiffAlongCoordinate (fun _ : _root_.UnitAddTorus d ↦ c) i := by
@@ -208,6 +220,35 @@ def coordinateDerivative (f : _root_.UnitAddTorus d → ℝ) (i : d)
     (x : _root_.UnitAddTorus d) : ℝ :=
   let z := coordinateSplit i x
   (TauCeti.Function.Periodic.deriv (coordinateSliceLift_periodic f i z.2)).lift z.1
+
+omit [Fintype d] in
+/-- At a real representative of the selected circle coordinate, the intrinsic coordinate
+derivative is the ordinary derivative of the lifted coordinate slice. -/
+theorem coordinateDerivative_coordinateSplit_symm_coe
+    (f : _root_.UnitAddTorus d → ℝ) (i : d) (y : CoordinateComplement d i) (r : ℝ) :
+    coordinateDerivative f i ((coordinateSplit i).symm ((r : _root_.UnitAddCircle), y)) =
+      deriv (coordinateSliceLift f i y) r := by
+  unfold coordinateDerivative
+  simp only [MeasurableEquiv.apply_symm_apply, Function.Periodic.lift_coe]
+
+omit [Fintype d] in
+/-- Identify an intrinsic coordinate derivative from ordinary derivatives of all explicit lifted
+coordinate slices. -/
+theorem coordinateDerivative_eq_of_hasDerivAt_coordinateSplit
+    (f f' : _root_.UnitAddTorus d → ℝ) (i : d)
+    (h : ∀ (y : CoordinateComplement d i) (r : ℝ),
+      HasDerivAt
+        (fun s : ℝ ↦ f ((coordinateSplit i).symm ((s : _root_.UnitAddCircle), y)))
+        (f' ((coordinateSplit i).symm ((r : _root_.UnitAddCircle), y))) r) :
+    coordinateDerivative f i = f' := by
+  funext x
+  rw [← (coordinateSplit i).symm_apply_apply x]
+  generalize coordinateSplit i x = z
+  rcases z with ⟨a, y⟩
+  induction a using QuotientAddGroup.induction_on with
+  | H r =>
+      rw [coordinateDerivative_coordinateSplit_symm_coe]
+      exact (h y r).deriv
 
 omit [Fintype d] in
 @[simp]
