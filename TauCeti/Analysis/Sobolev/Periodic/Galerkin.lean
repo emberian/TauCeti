@@ -29,7 +29,9 @@ inner product.  These maps are contractive, symmetric, idempotent, and converge 
 identity along the directed net of finite frequency sets.  The proof of convergence deliberately
 does not identify the projection with the raw real Fourier truncation: arbitrary finite frequency
 sets need not be symmetric under negation, so those truncations are used only as convergent
-competitors in the same Galerkin space.
+competitors in the same Galerkin space.  Zero-extension of real Fourier coefficients proves that
+the Galerkin spaces are monotone in the frequency set, and the associated nested orthogonal
+projectors absorb in both composition orders.
 
 This advances Layer 7, item 1, of the `IncompressibleFlows` roadmap.  It does **not** yet prove
 commutation with the Leray or Stokes operators or extend nonlinear cancellation to the
@@ -41,7 +43,9 @@ finite-dimensional evolution system.
   incompressibility.
 * `PeriodicMeanZeroDivergenceFreeW12.fourierTruncation`: constraint-preserving energy truncation.
 * `periodicGalerkinSubmodule`: a finite-dimensional energy subspace at finite frequency support.
+* `periodicGalerkinSubmodule_mono`: directedness under enlargement of the frequency set.
 * `periodicGalerkinProjectionL`: its canonical energy-orthogonal projection.
+* `periodicGalerkinProjectionL_comp_of_subset`: nested-projector absorption.
 * `tendsto_periodicGalerkinProjectionL`: strong graph-norm convergence to the identity.
 * `dense_isFiniteGalerkinField`: graph-norm density of finite incompressible Fourier fields.
 -/
@@ -123,10 +127,48 @@ def realTrigonometricSynthesis (S : Finset (d → ℤ)) :
     rw [Finset.smul_sum]
     rfl
 
+/-- A component of real finite Fourier synthesis is the corresponding finite mode sum. -/
+@[simp]
+theorem component_realTrigonometricSynthesis (S : Finset (d → ℤ))
+    (a : d → S → ℂ) (j : d) :
+    component (realTrigonometricSynthesis S a) j =
+      ∑ k : S, PeriodicW12.realMFourierAtom (a j k) k.1 := by
+  change component (ofComponents fun j ↦
+    ∑ k : S, PeriodicW12.realMFourierAtom (a j k) k.1) j = _
+  rw [component_ofComponents]
+
 /-- The finite-dimensional ambient vector trigonometric subspace supported in `S`. -/
 def realTrigonometricSubmodule (S : Finset (d → ℤ)) :
     Submodule ℝ (PeriodicVectorW12 d) :=
   (realTrigonometricSynthesis S).range
+
+/-- Enlarging the frequency set enlarges the ambient real trigonometric subspace. -/
+theorem realTrigonometricSubmodule_mono {S T : Finset (d → ℤ)}
+    (hST : S ⊆ T) : realTrigonometricSubmodule S ≤ realTrigonometricSubmodule T := by
+  rintro _ ⟨a, rfl⟩
+  let b : d → T → ℂ := fun j k ↦ if hk : k.1 ∈ S then a j ⟨k.1, hk⟩ else 0
+  refine ⟨b, ?_⟩
+  apply ext_component
+  intro j
+  rw [component_realTrigonometricSynthesis, component_realTrigonometricSynthesis]
+  let g : (d → ℤ) → PeriodicW12 d := fun k ↦
+    if hk : k ∈ S then PeriodicW12.realMFourierAtom (a j ⟨k, hk⟩) k else 0
+  calc
+    (∑ k : T, PeriodicW12.realMFourierAtom (b j k) k.1) = ∑ k ∈ T, g k := by
+      rw [Finset.sum_subtype T (fun _ ↦ Iff.rfl) g]
+      apply Finset.sum_congr rfl
+      intro k _
+      by_cases hk : k.1 ∈ S <;> simp [b, g, hk]
+    _ = ∑ k ∈ S, g k := by
+      symm
+      apply Finset.sum_subset hST
+      intro k hkT hkS
+      simp [g, hkS]
+    _ = ∑ k : S, PeriodicW12.realMFourierAtom (a j k) k.1 := by
+      rw [Finset.sum_subtype S (fun _ ↦ Iff.rfl) g]
+      apply Finset.sum_congr rfl
+      intro k hk
+      simp [g]
 
 noncomputable instance finiteDimensional_realTrigonometricSubmodule
     (S : Finset (d → ℤ)) :
@@ -237,6 +279,13 @@ theorem mem_periodicGalerkinSubmodule_iff
       (u : PeriodicVectorW12 d) ∈ PeriodicVectorW12.realTrigonometricSubmodule S := by
   rfl
 
+/-- The finite-frequency Galerkin subspaces are monotone in their frequency sets. -/
+theorem periodicGalerkinSubmodule_mono {S T : Finset (d → ℤ)} (hST : S ⊆ T) :
+    periodicGalerkinSubmodule S ≤ periodicGalerkinSubmodule T := by
+  intro u hu
+  rw [mem_periodicGalerkinSubmodule_iff] at hu ⊢
+  exact PeriodicVectorW12.realTrigonometricSubmodule_mono hST hu
+
 private def periodicGalerkinToRealTrigonometricSubmodule
     (S : Finset (d → ℤ)) :
     periodicGalerkinSubmodule S →ₗ[ℝ]
@@ -327,6 +376,52 @@ theorem periodicGalerkinProjectionL_idem
     periodicGalerkinProjectionL S (periodicGalerkinProjectionL S u) =
       periodicGalerkinProjectionL S u :=
   (periodicGalerkinProjectionL_eq_self_iff S _).mpr (periodicGalerkinProjectionL_mem S u)
+
+/-- Projecting first onto a larger frequency space and then onto a contained one is the same as
+projecting directly onto the smaller space. -/
+theorem periodicGalerkinProjectionL_subset_apply_superset {S T : Finset (d → ℤ)}
+    (hST : S ⊆ T) (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    periodicGalerkinProjectionL S (periodicGalerkinProjectionL T u) =
+      periodicGalerkinProjectionL S u := by
+  let nag : NormedAddCommGroup (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+  let ips : InnerProductSpace ℝ (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+  let U : @Submodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) Real.semiring
+      nag.toAddCommGroup.toAddCommMonoid ips.toNormedSpace.toModule :=
+    (periodicGalerkinClosedSubmodule S).toSubmodule
+  let V : @Submodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) Real.semiring
+      nag.toAddCommGroup.toAddCommMonoid ips.toNormedSpace.toModule :=
+    (periodicGalerkinClosedSubmodule T).toSubmodule
+  have hUV : U ≤ V := periodicGalerkinSubmodule_mono hST
+  have hcomp := @Submodule.starProjection_comp_starProjection_of_le ℝ
+    (PeriodicMeanZeroDivergenceFreeW12 d) _ nag ips U V inferInstance inferInstance hUV
+  have happ := DFunLike.congr_fun hcomp u
+  simpa only [ContinuousLinearMap.comp_apply, periodicGalerkinProjectionL, U, V] using happ
+
+/-- Projecting a smaller-frequency field onto any containing Galerkin space fixes it. -/
+theorem periodicGalerkinProjectionL_superset_apply_subset {S T : Finset (d → ℤ)}
+    (hST : S ⊆ T) (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    periodicGalerkinProjectionL T (periodicGalerkinProjectionL S u) =
+      periodicGalerkinProjectionL S u := by
+  apply (periodicGalerkinProjectionL_eq_self_iff T _).mpr
+  exact periodicGalerkinSubmodule_mono hST (periodicGalerkinProjectionL_mem S u)
+
+/-- Nested Galerkin projections absorb in the order smaller-after-larger. -/
+theorem periodicGalerkinProjectionL_comp_of_subset {S T : Finset (d → ℤ)}
+    (hST : S ⊆ T) :
+    (periodicGalerkinProjectionL S).comp (periodicGalerkinProjectionL T) =
+      periodicGalerkinProjectionL S := by
+  apply ContinuousLinearMap.ext
+  intro u
+  exact periodicGalerkinProjectionL_subset_apply_superset hST u
+
+/-- Nested Galerkin projections also absorb in the order larger-after-smaller. -/
+theorem periodicGalerkinProjectionL_comp_rev_of_subset {S T : Finset (d → ℤ)}
+    (hST : S ⊆ T) :
+    (periodicGalerkinProjectionL T).comp (periodicGalerkinProjectionL S) =
+      periodicGalerkinProjectionL S := by
+  apply ContinuousLinearMap.ext
+  intro u
+  exact periodicGalerkinProjectionL_superset_apply_subset hST u
 
 /-- Orthogonal Galerkin projection is `1`-Lipschitz in the energy graph metric. -/
 theorem periodicGalerkinProjectionL_lipschitzWith
