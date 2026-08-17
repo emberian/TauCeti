@@ -188,6 +188,14 @@ slice is `C¹`. -/
 def ContDiffAlongCoordinate (f : _root_.UnitAddTorus d → ℝ) (i : d) : Prop :=
   ∀ y : CoordinateComplement d i, ContDiff ℝ 1 (coordinateSliceLift f i y)
 
+omit [Fintype d] in
+/-- Constant scalar fields are `C¹` along every torus coordinate. -/
+theorem contDiffAlongCoordinate_const (c : ℝ) (i : d) :
+    ContDiffAlongCoordinate (fun _ : _root_.UnitAddTorus d => c) i := by
+  intro y
+  change ContDiff ℝ 1 (fun _ : ℝ => c)
+  fun_prop
+
 /-- A periodic lift agrees with evaluation through the half-open fundamental domain. -/
 private theorem periodicLift_eq_liftIoc {f : ℝ → ℝ} (hf : Periodic f 1)
     (a : _root_.UnitAddCircle) :
