@@ -236,6 +236,12 @@ theorem weakDivergence_eq_sum (u : PeriodicVectorW12 d) :
 def representative (u : PeriodicVectorW12 d) : VectorField d :=
   fun x j ↦ PeriodicW12.value (component u j) x
 
+@[simp]
+theorem representative_apply (u : PeriodicVectorW12 d)
+    (x : _root_.UnitAddTorus d) (j : d) :
+    representative u x j = PeriodicW12.value (component u j) x := by
+  rfl
+
 /-- The canonical pointwise representative of the quotient-level weak Jacobian. -/
 def weakJacobianRepresentative (u : PeriodicVectorW12 d) : TensorField d :=
   fun x i j ↦ weakJacobianEntry u i j x
