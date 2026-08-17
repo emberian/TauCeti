@@ -163,6 +163,14 @@ theorem ContDiffVectorField.component {u : VectorField d} (hu : ContDiffVectorFi
   exact hu i j
 
 omit [Fintype d] in
+/-- Build a coordinatewise smooth vector field from smoothness of all scalar components in all
+coordinate directions. -/
+theorem contDiffVectorField_of_components {u : VectorField d}
+    (hu : ∀ i j, ContDiffAlongCoordinate (fun x ↦ u x j) i) :
+    ContDiffVectorField u := by
+  exact hu
+
+omit [Fintype d] in
 theorem componentDerivative_const (c : d → ℝ) (i j : d)
     (x : _root_.UnitAddTorus d) :
     componentDerivative (fun _ ↦ c) i j x = 0 := by

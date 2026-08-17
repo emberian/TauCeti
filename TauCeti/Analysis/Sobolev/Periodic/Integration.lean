@@ -207,6 +207,53 @@ theorem contDiffAlongCoordinate_const (c : ℝ) (i : d) :
   exact contDiff_const
 
 omit [Fintype d] in
+/-- Coordinatewise continuous differentiability is preserved by pointwise addition. -/
+theorem ContDiffAlongCoordinate.add {f g : _root_.UnitAddTorus d → ℝ} {i : d}
+    (hf : ContDiffAlongCoordinate f i) (hg : ContDiffAlongCoordinate g i) :
+    ContDiffAlongCoordinate (fun x ↦ f x + g x) i := by
+  intro y
+  exact (hf y).add (hg y)
+
+omit [Fintype d] in
+/-- Coordinatewise continuous differentiability is preserved by pointwise negation. -/
+theorem ContDiffAlongCoordinate.neg {f : _root_.UnitAddTorus d → ℝ} {i : d}
+    (hf : ContDiffAlongCoordinate f i) :
+    ContDiffAlongCoordinate (fun x ↦ -f x) i := by
+  intro y
+  exact (hf y).neg
+
+omit [Fintype d] in
+/-- Coordinatewise continuous differentiability is preserved by pointwise subtraction. -/
+theorem ContDiffAlongCoordinate.sub {f g : _root_.UnitAddTorus d → ℝ} {i : d}
+    (hf : ContDiffAlongCoordinate f i) (hg : ContDiffAlongCoordinate g i) :
+    ContDiffAlongCoordinate (fun x ↦ f x - g x) i := by
+  intro y
+  exact (hf y).sub (hg y)
+
+omit [Fintype d] in
+/-- Coordinatewise continuous differentiability is preserved by real scalar multiplication. -/
+theorem ContDiffAlongCoordinate.const_smul {f : _root_.UnitAddTorus d → ℝ} {i : d}
+    (hf : ContDiffAlongCoordinate f i) (c : ℝ) :
+    ContDiffAlongCoordinate (fun x ↦ c * f x) i := by
+  intro y
+  change ContDiff ℝ 1 (fun r ↦ c * coordinateSliceLift f i y r)
+  simpa only [smul_eq_mul] using (hf y).const_smul c
+
+omit [Fintype d] in
+/-- A finite sum of coordinatewise `C¹` scalar fields is coordinatewise `C¹`. -/
+theorem ContDiffAlongCoordinate.finsetSum {ι : Type*} (s : Finset ι)
+    (f : ι → _root_.UnitAddTorus d → ℝ) (i : d)
+    (hf : ∀ a ∈ s, ContDiffAlongCoordinate (f a) i) :
+    ContDiffAlongCoordinate (fun x ↦ ∑ a ∈ s, f a x) i := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using contDiffAlongCoordinate_const (d := d) 0 i
+  | @insert a s ha ih =>
+      simpa only [Finset.sum_insert ha] using
+        (hf a (Finset.mem_insert_self a s)).add
+          (ih fun b hb ↦ hf b (Finset.mem_insert_of_mem hb))
+
+omit [Fintype d] in
 /-- Coordinatewise continuous differentiability is preserved by pointwise multiplication. -/
 theorem ContDiffAlongCoordinate.mul {f g : _root_.UnitAddTorus d → ℝ} {i : d}
     (hf : ContDiffAlongCoordinate f i) (hg : ContDiffAlongCoordinate g i) :
@@ -272,6 +319,102 @@ theorem coordinateDerivative_const (c : ℝ) (i : d) (x : _root_.UnitAddTorus d)
   rw [periodicLift_eq_liftIoc]
   rw [hfun, deriv_const']
   rfl
+
+omit [Fintype d] in
+/-- Linearity of the intrinsic coordinate derivative under pointwise addition. -/
+theorem coordinateDerivative_add (f g : _root_.UnitAddTorus d → ℝ) (i : d)
+    (hf : ContDiffAlongCoordinate f i) (hg : ContDiffAlongCoordinate g i) :
+    coordinateDerivative (fun z ↦ f z + g z) i =
+      fun x ↦ coordinateDerivative f i x + coordinateDerivative g i x := by
+  apply coordinateDerivative_eq_of_hasDerivAt_coordinateSplit
+  intro y r
+  have hf' : HasDerivAt
+      (fun s : ℝ ↦ f ((coordinateSplit i).symm ((s : _root_.UnitAddCircle), y)))
+      (coordinateDerivative f i ((coordinateSplit i).symm
+        ((r : _root_.UnitAddCircle), y))) r := by
+    rw [coordinateDerivative_coordinateSplit_symm_coe]
+    exact ((hf y).differentiable one_ne_zero).differentiableAt.hasDerivAt
+  have hg' : HasDerivAt
+      (fun s : ℝ ↦ g ((coordinateSplit i).symm ((s : _root_.UnitAddCircle), y)))
+      (coordinateDerivative g i ((coordinateSplit i).symm
+        ((r : _root_.UnitAddCircle), y))) r := by
+    rw [coordinateDerivative_coordinateSplit_symm_coe]
+    exact ((hg y).differentiable one_ne_zero).differentiableAt.hasDerivAt
+  exact hf'.add hg'
+
+omit [Fintype d] in
+/-- Linearity of the intrinsic coordinate derivative under pointwise negation. -/
+theorem coordinateDerivative_neg (f : _root_.UnitAddTorus d → ℝ) (i : d)
+    (hf : ContDiffAlongCoordinate f i) :
+    coordinateDerivative (fun z ↦ -f z) i = fun x ↦ -coordinateDerivative f i x := by
+  apply coordinateDerivative_eq_of_hasDerivAt_coordinateSplit
+  intro y r
+  have hf' : HasDerivAt
+      (fun s : ℝ ↦ f ((coordinateSplit i).symm ((s : _root_.UnitAddCircle), y)))
+      (coordinateDerivative f i ((coordinateSplit i).symm
+        ((r : _root_.UnitAddCircle), y))) r := by
+    rw [coordinateDerivative_coordinateSplit_symm_coe]
+    exact ((hf y).differentiable one_ne_zero).differentiableAt.hasDerivAt
+  exact hf'.neg
+
+omit [Fintype d] in
+/-- Linearity of the intrinsic coordinate derivative under pointwise subtraction. -/
+theorem coordinateDerivative_sub (f g : _root_.UnitAddTorus d → ℝ) (i : d)
+    (hf : ContDiffAlongCoordinate f i) (hg : ContDiffAlongCoordinate g i) :
+    coordinateDerivative (fun z ↦ f z - g z) i =
+      fun x ↦ coordinateDerivative f i x - coordinateDerivative g i x := by
+  apply coordinateDerivative_eq_of_hasDerivAt_coordinateSplit
+  intro y r
+  have hf' : HasDerivAt
+      (fun s : ℝ ↦ f ((coordinateSplit i).symm ((s : _root_.UnitAddCircle), y)))
+      (coordinateDerivative f i ((coordinateSplit i).symm
+        ((r : _root_.UnitAddCircle), y))) r := by
+    rw [coordinateDerivative_coordinateSplit_symm_coe]
+    exact ((hf y).differentiable one_ne_zero).differentiableAt.hasDerivAt
+  have hg' : HasDerivAt
+      (fun s : ℝ ↦ g ((coordinateSplit i).symm ((s : _root_.UnitAddCircle), y)))
+      (coordinateDerivative g i ((coordinateSplit i).symm
+        ((r : _root_.UnitAddCircle), y))) r := by
+    rw [coordinateDerivative_coordinateSplit_symm_coe]
+    exact ((hg y).differentiable one_ne_zero).differentiableAt.hasDerivAt
+  exact hf'.sub hg'
+
+omit [Fintype d] in
+/-- Linearity of the intrinsic coordinate derivative under real scalar multiplication. -/
+theorem coordinateDerivative_const_smul (f : _root_.UnitAddTorus d → ℝ) (c : ℝ) (i : d)
+    (hf : ContDiffAlongCoordinate f i) :
+    coordinateDerivative (fun z ↦ c * f z) i = fun x ↦ c * coordinateDerivative f i x := by
+  apply coordinateDerivative_eq_of_hasDerivAt_coordinateSplit
+  intro y r
+  have hf' : HasDerivAt
+      (fun s : ℝ ↦ f ((coordinateSplit i).symm ((s : _root_.UnitAddCircle), y)))
+      (coordinateDerivative f i ((coordinateSplit i).symm
+        ((r : _root_.UnitAddCircle), y))) r := by
+    rw [coordinateDerivative_coordinateSplit_symm_coe]
+    exact ((hf y).differentiable one_ne_zero).differentiableAt.hasDerivAt
+  exact hf'.const_mul c
+
+omit [Fintype d] in
+/-- The intrinsic coordinate derivative commutes with finite sums of coordinatewise `C¹`
+scalar fields. -/
+theorem coordinateDerivative_finsetSum {ι : Type*} (s : Finset ι)
+    (f : ι → _root_.UnitAddTorus d → ℝ) (i : d)
+    (hf : ∀ a ∈ s, ContDiffAlongCoordinate (f a) i) :
+    coordinateDerivative (fun x ↦ ∑ a ∈ s, f a x) i =
+      fun x ↦ ∑ a ∈ s, coordinateDerivative (f a) i x := by
+  classical
+  induction s using Finset.induction_on with
+  | empty =>
+      funext x
+      simp only [Finset.sum_empty]
+      exact coordinateDerivative_const 0 i x
+  | @insert a s ha ih =>
+      simp only [Finset.sum_insert ha]
+      rw [coordinateDerivative_add (f a) (fun x ↦ ∑ b ∈ s, f b x) i
+        (hf a (Finset.mem_insert_self a s))
+        ((ContDiffAlongCoordinate.finsetSum s f i) fun b hb ↦
+          hf b (Finset.mem_insert_of_mem hb)),
+        ih fun b hb ↦ hf b (Finset.mem_insert_of_mem hb)]
 
 omit [Fintype d] in
 /-- Leibniz rule for the intrinsic classical coordinate derivative on a finite unit torus. -/
