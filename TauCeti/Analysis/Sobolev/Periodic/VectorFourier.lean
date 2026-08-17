@@ -37,7 +37,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ENNReal
@@ -252,4 +252,4 @@ theorem mFourierCoeff_zero (u : PeriodicMeanZeroDivergenceFreeW12 d) :
 
 end PeriodicMeanZeroDivergenceFreeW12
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

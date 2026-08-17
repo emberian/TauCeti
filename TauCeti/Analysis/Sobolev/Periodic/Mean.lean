@@ -31,12 +31,12 @@ mean-zero and coordinate-derivative statements generalize proof seeds from
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.mean`: the normalized spatial mean.
-* `TauCeti.UnitAddTorus.meanZero`: subtraction of the spatial mean.
-* `TauCeti.UnitAddTorus.meanZeroSubspaceL2`: the closed `L²` subspace orthogonal to constants.
-* `TauCeti.UnitAddTorus.meanZeroProjectionL2`: the contractive orthogonal projection onto it.
-* `TauCeti.UnitAddTorus.mFourierCoeff_zero_eq_mean`: the zero Fourier coefficient is the mean.
-* `TauCeti.UnitAddTorus.integral_coordinateDerivative_eq_zero`: smooth coordinate derivatives
+* `UnitAddTorus.mean`: the normalized spatial mean.
+* `UnitAddTorus.meanZero`: subtraction of the spatial mean.
+* `UnitAddTorus.meanZeroSubspaceL2`: the closed `L²` subspace orthogonal to constants.
+* `UnitAddTorus.meanZeroProjectionL2`: the contractive orthogonal projection onto it.
+* `UnitAddTorus.mFourierCoeff_zero_eq_mean`: the zero Fourier coefficient is the mean.
+* `UnitAddTorus.integral_coordinateDerivative_eq_zero`: smooth coordinate derivatives
   have zero spatial integral.
 -/
 
@@ -44,7 +44,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 
@@ -298,4 +298,4 @@ theorem integral_coordinateDerivative_eq_zero
 
 end CoordinateDerivative
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

@@ -35,7 +35,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -434,4 +434,4 @@ theorem exists_realTrigonometricPolynomial_norm_sub_lt
 
 end PeriodicW12
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

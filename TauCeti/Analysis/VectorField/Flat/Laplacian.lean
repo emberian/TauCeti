@@ -28,14 +28,14 @@ claimed here; that extension still requires the bounded-operator and density bri
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.scalarLaplacian`: scalar `Δ = div grad`.
-* `TauCeti.UnitAddTorus.vectorLaplacian`: componentwise vector `Δ = div jacobian`.
-* `TauCeti.UnitAddTorus.integral_scalarLaplacian_eq_zero`: periodic scalar Laplacian has mean zero.
-* `TauCeti.UnitAddTorus.integral_mul_scalarLaplacian_eq_neg_integral_pairing_gradient`: scalar
+* `UnitAddTorus.scalarLaplacian`: scalar `Δ = div grad`.
+* `UnitAddTorus.vectorLaplacian`: componentwise vector `Δ = div jacobian`.
+* `UnitAddTorus.integral_scalarLaplacian_eq_zero`: periodic scalar Laplacian has mean zero.
+* `UnitAddTorus.integral_mul_scalarLaplacian_eq_neg_integral_pairing_gradient`: scalar
   Green identity.
-* `TauCeti.UnitAddTorus.integral_pairing_vectorLaplacian_eq_neg_sum_integral_jacobian`: vector
+* `UnitAddTorus.integral_pairing_vectorLaplacian_eq_neg_sum_integral_jacobian`: vector
   Green identity.
-* `TauCeti.UnitAddTorus.integral_pairing_vectorLaplacian_self_eq_neg_sum_integral_sq`: diagonal
+* `UnitAddTorus.integral_pairing_vectorLaplacian_self_eq_neg_sum_integral_sq`: diagonal
   viscous dissipation identity.
 -/
 
@@ -43,7 +43,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped BigOperators
@@ -304,4 +304,4 @@ theorem integral_pairing_vectorLaplacian_self_eq_neg_sum_integral_sq
       (fun i j ↦ by simpa only [pow_two] using hsquare i j)
   simpa only [pow_two] using hgreen
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

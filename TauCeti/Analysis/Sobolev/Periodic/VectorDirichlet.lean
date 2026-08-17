@@ -22,17 +22,17 @@ as the variational negative Laplacian: by definition its sign convention is
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.periodicVectorDirichletFormL`: the bounded curried bilinear form.
-* `TauCeti.UnitAddTorus.periodicVectorDirichletForm_eq_sum_inner`: its componentwise formula.
-* `TauCeti.UnitAddTorus.periodicVectorDirichletForm_self`: the weak-Jacobian energy identity.
-* `TauCeti.UnitAddTorus.variationalNegativeLaplacianL`: the variational operator `-Δ`.
+* `UnitAddTorus.periodicVectorDirichletFormL`: the bounded curried bilinear form.
+* `UnitAddTorus.periodicVectorDirichletForm_eq_sum_inner`: its componentwise formula.
+* `UnitAddTorus.periodicVectorDirichletForm_self`: the weak-Jacobian energy identity.
+* `UnitAddTorus.variationalNegativeLaplacianL`: the variational operator `-Δ`.
 -/
 
 public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ENNReal
@@ -197,4 +197,4 @@ theorem norm_variationalNegativeLaplacianL_apply_le (u : PeriodicVectorW12 d) :
     ‖variationalNegativeLaplacianL u‖ ≤ ‖u‖ :=
   norm_periodicVectorDirichletFormL_apply_le u
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

@@ -25,11 +25,11 @@ This advances Layer 0, items 3 and 4, and the periodic Poincare acceptance check
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.PeriodicW12.meanL`: the normalized scalar spatial mean.
-* `TauCeti.UnitAddTorus.periodicMeanZeroW12Submodule`: its closed kernel.
-* `TauCeti.UnitAddTorus.PeriodicVectorW12.meanL`: the componentwise vector mean.
-* `TauCeti.UnitAddTorus.periodicMeanZeroVectorW12Submodule`: its closed kernel.
-* `TauCeti.UnitAddTorus.periodicMeanZeroDivergenceFreeW12Submodule`: the mean-zero incompressible
+* `UnitAddTorus.PeriodicW12.meanL`: the normalized scalar spatial mean.
+* `UnitAddTorus.periodicMeanZeroW12Submodule`: its closed kernel.
+* `UnitAddTorus.PeriodicVectorW12.meanL`: the componentwise vector mean.
+* `UnitAddTorus.periodicMeanZeroVectorW12Submodule`: its closed kernel.
+* `UnitAddTorus.periodicMeanZeroDivergenceFreeW12Submodule`: the mean-zero incompressible
   energy space as an intersection of closed subspaces.
 -/
 
@@ -37,7 +37,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ENNReal InnerProductSpace
@@ -107,7 +107,7 @@ theorem weakDeriv_const (c : ℝ) (i : d) : weakDeriv (const (d := d) c) i = 0 :
   rfl
 
 theorem mean_const (c : ℝ) :
-    TauCeti.UnitAddTorus.mean (value (const (d := d) c)) = c := by
+    UnitAddTorus.mean (value (const (d := d) c)) = c := by
   rw [value_const, mean_eq_average, average_eq_integral,
     integral_congr_ae (Lp.coeFn_const 2
       (volume : Measure (_root_.UnitAddTorus d)) c)]
@@ -167,7 +167,7 @@ theorem meanL_apply (u : PeriodicVectorW12 d) : meanL u = mean u := by
 
 @[simp]
 theorem mean_apply (u : PeriodicVectorW12 d) (j : d) :
-    mean u j = TauCeti.UnitAddTorus.mean (PeriodicW12.value (component u j)) := by
+    mean u j = UnitAddTorus.mean (PeriodicW12.value (component u j)) := by
   rw [mean, meanL, piLpFamilyL_apply, ContinuousLinearMap.comp_apply,
     PeriodicW12.meanL_apply, componentL_apply]
 
@@ -179,7 +179,7 @@ private theorem integrable_representative_component (u : PeriodicVectorW12 d) (j
 /-- The quotient-level vector mean agrees coordinatewise with the normalized mean of the
 canonical representative. -/
 theorem mean_representative_apply (u : PeriodicVectorW12 d) (j : d) :
-    TauCeti.UnitAddTorus.mean (representative u) j = mean u j := by
+    UnitAddTorus.mean (representative u) j = mean u j := by
   rw [mean_apply, mean_eq_average, average_eq_integral,
     MeasureTheory.eval_integral (fun i ↦ integrable_representative_component u i) j,
     mean_eq_average, average_eq_integral]
@@ -409,4 +409,4 @@ theorem norm_sq_le_one_add_inv_four_pi_sq_mul_norm_weakJacobian_sq
 
 end PeriodicMeanZeroDivergenceFreeW12
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

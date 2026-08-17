@@ -31,19 +31,19 @@ energy-space level.
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.periodicEnergyDirichletFormL`: the restricted bounded bilinear form.
-* `TauCeti.UnitAddTorus.periodicEnergyDirichletForm_isCoercive`: its explicit coercivity.
-* `TauCeti.UnitAddTorus.periodicWeakStokesRieszEquiv`: the Lax--Milgram Riesz-side equivalence.
-* `TauCeti.UnitAddTorus.periodicWeakStokesSolutionL`: the continuous weak solution operator.
-* `TauCeti.UnitAddTorus.periodicWeakStokesSolution_variational`: its variational equation.
-* `TauCeti.UnitAddTorus.existsUnique_periodicWeakStokesSolution`: existence and uniqueness.
+* `UnitAddTorus.periodicEnergyDirichletFormL`: the restricted bounded bilinear form.
+* `UnitAddTorus.periodicEnergyDirichletForm_isCoercive`: its explicit coercivity.
+* `UnitAddTorus.periodicWeakStokesRieszEquiv`: the Lax--Milgram Riesz-side equivalence.
+* `UnitAddTorus.periodicWeakStokesSolutionL`: the continuous weak solution operator.
+* `UnitAddTorus.periodicWeakStokesSolution_variational`: its variational equation.
+* `UnitAddTorus.existsUnique_periodicWeakStokesSolution`: existence and uniqueness.
 -/
 
 public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open scoped InnerProductSpace
 
@@ -291,4 +291,4 @@ theorem norm_periodicWeakStokesSolution_le
     rw [periodicStokesCoercivityConstant] at hcancel
     exact (inv_mul_le_iff₀ periodicStokesGraphConstant_pos).mp hcancel
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

@@ -23,18 +23,18 @@ This advances Layer 0, item 3 and the periodic-gradient Fourier-mode acceptance 
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.mFourier_coordinateSplit_symm_coe`: factorization along one coordinate.
-* `TauCeti.UnitAddTorus.coordinateDerivative_mFourier_re`: derivative of a mode's real part.
-* `TauCeti.UnitAddTorus.coordinateDerivative_mFourier_im`: derivative of a mode's imaginary part.
-* `TauCeti.UnitAddTorus.mFourierReCoordinateTest`: real part as a coordinate test function.
-* `TauCeti.UnitAddTorus.mFourierImCoordinateTest`: imaginary part as a coordinate test function.
+* `UnitAddTorus.mFourier_coordinateSplit_symm_coe`: factorization along one coordinate.
+* `UnitAddTorus.coordinateDerivative_mFourier_re`: derivative of a mode's real part.
+* `UnitAddTorus.coordinateDerivative_mFourier_im`: derivative of a mode's imaginary part.
+* `UnitAddTorus.mFourierReCoordinateTest`: real part as a coordinate test function.
+* `UnitAddTorus.mFourierImCoordinateTest`: imaginary part as a coordinate test function.
 -/
 
 public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 
@@ -238,4 +238,4 @@ theorem coordinateDerivative_mFourierImCoordinateTest (m : d → ℤ) (i : d)
       (2 * Real.pi * Complex.I * (m i) * _root_.UnitAddTorus.mFourier m x).im :=
   coordinateDerivative_mFourier_im m i x
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

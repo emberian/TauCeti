@@ -38,7 +38,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 
@@ -130,4 +130,4 @@ theorem summable_mFourierDirichletTerm_iff_exists_periodicW12_value_eq
     exact (hasSum_mFourierDirichletTerm_of_weakCoordinateDerivatives
       f D hf hD hweak).summable
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

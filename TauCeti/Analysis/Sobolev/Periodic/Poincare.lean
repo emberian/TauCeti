@@ -25,10 +25,10 @@ This advances Layer 0, item 4 and the periodic Poincare acceptance check in the
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.frequencyNormSq`: squared Euclidean norm of an integer frequency.
-* `TauCeti.UnitAddTorus.one_le_frequencyNormSq`: the unit spectral gap away from zero.
-* `TauCeti.UnitAddTorus.mFourierDirichletTerm`: one term of the Fourier Dirichlet energy.
-* `TauCeti.UnitAddTorus.norm_sq_le_inv_four_pi_sq_mul_tsum_mFourierDirichletTerm`: the sharp
+* `UnitAddTorus.frequencyNormSq`: squared Euclidean norm of an integer frequency.
+* `UnitAddTorus.one_le_frequencyNormSq`: the unit spectral gap away from zero.
+* `UnitAddTorus.mFourierDirichletTerm`: one term of the Fourier Dirichlet energy.
+* `UnitAddTorus.norm_sq_le_inv_four_pi_sq_mul_tsum_mFourierDirichletTerm`: the sharp
   Fourier-form Poincare estimate on mean-zero complex `L²`.
 -/
 
@@ -36,7 +36,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped BigOperators
@@ -172,4 +172,4 @@ theorem norm_sq_le_inv_four_pi_sq_mul_tsum_mFourierDirichletTerm
       rw [tsum_mul_left]
     _ = _ := rfl
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

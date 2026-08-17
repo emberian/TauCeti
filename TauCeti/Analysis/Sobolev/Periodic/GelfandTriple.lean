@@ -37,7 +37,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ENNReal InnerProductSpace
@@ -231,4 +231,4 @@ theorem periodicPivotEmbeddingL_injective :
   intro h
   exact congrFun hall h
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

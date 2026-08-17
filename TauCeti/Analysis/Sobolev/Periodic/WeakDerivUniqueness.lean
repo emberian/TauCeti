@@ -30,11 +30,11 @@ annihilates every complex Fourier mode, and the fundamental lemma gives uniquene
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.ae_eq_zero_of_integral_mFourier_mul_eq_zero`: `L¹` Fourier separation for
+* `UnitAddTorus.ae_eq_zero_of_integral_mFourier_mul_eq_zero`: `L¹` Fourier separation for
   real fields on a finite unit torus.
-* `TauCeti.UnitAddTorus.HasWeakCoordinateDerivative.ae_eq_deriv`: almost-everywhere uniqueness of
+* `UnitAddTorus.HasWeakCoordinateDerivative.ae_eq_deriv`: almost-everywhere uniqueness of
   periodic weak coordinate derivatives.
-* `TauCeti.UnitAddTorus.HasWeakCoordinateDerivative.ae_eq_coordinateDerivative`: agreement with an
+* `UnitAddTorus.HasWeakCoordinateDerivative.ae_eq_coordinateDerivative`: agreement with an
   integrable classical coordinate derivative.
 -/
 
@@ -42,7 +42,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory Set Algebra Submodule TopologicalSpace
 open scoped ENNReal ComplexConjugate
@@ -237,4 +237,4 @@ theorem HasWeakCoordinateDerivative.ae_eq_zero_deriv_of_const [DecidableEq d]
     g =ᵐ[volume] 0 :=
   h.ae_eq_deriv (hasWeakCoordinateDerivative_const c i)
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

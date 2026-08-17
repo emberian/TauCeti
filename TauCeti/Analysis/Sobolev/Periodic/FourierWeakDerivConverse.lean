@@ -43,7 +43,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ComplexConjugate ENNReal lp
@@ -339,4 +339,4 @@ theorem summable_mFourierDirichletTerm_iff_exists_weakCoordinateDerivatives
     exact (hasSum_mFourierDirichletTerm_of_weakCoordinateDerivatives
       f D hf hD hweak).summable
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

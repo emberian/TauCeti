@@ -36,7 +36,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory Filter Topology
 
@@ -309,4 +309,4 @@ theorem mean_fourierTruncation_eq_zero (u : PeriodicVectorW12 d)
 
 end PeriodicVectorW12
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

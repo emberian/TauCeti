@@ -15,7 +15,7 @@ torus. A test field is `C¹` along the selected coordinate and both it and its c
 derivative are essentially bounded. The latter two hypotheses make its products with any
 integrable field integrable, so every integral in the weak relation is an honest Bochner integral.
 
-`TauCeti.UnitAddTorus.HasWeakCoordinateDerivative f f' i` requires `f` and `f'` themselves to be
+`UnitAddTorus.HasWeakCoordinateDerivative f f' i` requires `f` and `f'` themselves to be
 integrable and asserts
 
 `∫ x, (∂ᵢ φ) x * f x = -∫ x, φ x * f' x`
@@ -31,21 +31,19 @@ that distinguishes periodic weak derivatives from weak derivatives on a domain w
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.CoordinateTestFunction`: bounded `C¹` coordinate test fields with bounded
+* `UnitAddTorus.CoordinateTestFunction`: bounded `C¹` coordinate test fields with bounded
   coordinate derivative.
-* `TauCeti.UnitAddTorus.HasWeakCoordinateDerivative`: the periodic weak coordinate derivative
+* `UnitAddTorus.HasWeakCoordinateDerivative`: the periodic weak coordinate derivative
   relation, including explicit integrability of the field and candidate derivative.
-* `TauCeti.UnitAddTorus.hasWeakCoordinateDerivative_coordinateDerivative`: a smooth classical
+* `UnitAddTorus.hasWeakCoordinateDerivative_coordinateDerivative`: a smooth classical
   coordinate derivative is a weak coordinate derivative.
-* `TauCeti.UnitAddTorus.HasWeakCoordinateDerivative.integral_deriv_eq_zero`: every periodic weak
+* `UnitAddTorus.HasWeakCoordinateDerivative.integral_deriv_eq_zero`: every periodic weak
   coordinate derivative has mean zero.
 -/
 
 public section
 
 noncomputable section
-
-namespace TauCeti
 
 open MeasureTheory
 open scoped ENNReal
@@ -299,5 +297,3 @@ theorem HasWeakCoordinateDerivative.integral_deriv_eq_zero
   exact neg_eq_zero.mp hneg.symm
 
 end UnitAddTorus
-
-end TauCeti

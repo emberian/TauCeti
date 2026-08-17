@@ -34,21 +34,21 @@ This advances the periodic solenoidal-space and Leray-projection prerequisites i
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.periodicSolenoidalL2Submodule`: closure of divergence-free `W¹,²`
+* `UnitAddTorus.periodicSolenoidalL2Submodule`: closure of divergence-free `W¹,²`
   values.
-* `TauCeti.UnitAddTorus.periodicMeanZeroSolenoidalL2Submodule`: closure of mean-zero
+* `UnitAddTorus.periodicMeanZeroSolenoidalL2Submodule`: closure of mean-zero
   incompressible energy values.
-* `TauCeti.UnitAddTorus.periodicMeanZeroSolenoidalL2Submodule_eq_inf`: identification of that
+* `UnitAddTorus.periodicMeanZeroSolenoidalL2Submodule_eq_inf`: identification of that
   closure with the zero-mean part of the full solenoidal closure.
-* `TauCeti.UnitAddTorus.periodicLerayProjectionL`: orthogonal projection onto the first closure.
-* `TauCeti.UnitAddTorus.periodicMeanZeroLerayProjectionL`: orthogonal projection onto the second.
+* `UnitAddTorus.periodicLerayProjectionL`: orthogonal projection onto the first closure.
+* `UnitAddTorus.periodicMeanZeroLerayProjectionL`: orthogonal projection onto the second.
 -/
 
 public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ENNReal InnerProductSpace
@@ -560,4 +560,4 @@ theorem periodicMeanZeroLerayProjectionL_value_periodicEnergyW12
   rw [← periodicEnergyValueL_apply,
     periodicMeanZeroLerayProjectionL_periodicEnergyValueL]
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

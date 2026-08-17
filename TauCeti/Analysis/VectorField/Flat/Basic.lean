@@ -29,15 +29,15 @@ finite index type.
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.gradient`, `jacobian`, and `divergence`: smooth flat differential
+* `UnitAddTorus.gradient`, `jacobian`, and `divergence`: smooth flat differential
   operators.
-* `TauCeti.UnitAddTorus.scalarTransport` and `vectorTransport`: advective derivatives.
-* `TauCeti.UnitAddTorus.integral_divergence_eq_zero`: periodic divergence theorem.
-* `TauCeti.UnitAddTorus.transport_integration_by_parts`: smooth transport integration by parts.
-* `TauCeti.UnitAddTorus.divergenceFree_transport_skew`: skew-adjointness of incompressible
+* `UnitAddTorus.scalarTransport` and `vectorTransport`: advective derivatives.
+* `UnitAddTorus.integral_divergence_eq_zero`: periodic divergence theorem.
+* `UnitAddTorus.transport_integration_by_parts`: smooth transport integration by parts.
+* `UnitAddTorus.divergenceFree_transport_skew`: skew-adjointness of incompressible
   transport.
-* `TauCeti.UnitAddTorus.transportTrilinear_swap`: skew-symmetry of the transport trilinear form.
-* `TauCeti.UnitAddTorus.integral_selfTransportEnergyDensity_eq_zero`: nonlinear kinetic-energy
+* `UnitAddTorus.transportTrilinear_swap`: skew-symmetry of the transport trilinear form.
+* `UnitAddTorus.integral_selfTransportEnergyDensity_eq_zero`: nonlinear kinetic-energy
   cancellation.
 -/
 
@@ -45,7 +45,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped BigOperators
@@ -421,4 +421,4 @@ theorem integral_selfTransportEnergyDensity_eq_zero (u : VectorField d)
       ring
     _ = 0 := htri
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

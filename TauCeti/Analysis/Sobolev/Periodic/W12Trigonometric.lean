@@ -37,7 +37,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 
@@ -250,4 +250,4 @@ theorem weakDeriv_realMFourierAtom_ae (a : ℂ) (k : d → ℤ) (i : d) :
 
 end PeriodicW12
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

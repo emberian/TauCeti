@@ -30,11 +30,11 @@ This is the scalar `p = 2`, order-one graph-space part of Layer 0, item 3 in the
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.periodicW12Submodule`: the closed graph in the value-gradient jet space.
-* `TauCeti.UnitAddTorus.PeriodicW12`: the resulting complete Hilbert space.
-* `TauCeti.UnitAddTorus.mem_periodicW12Submodule_iff_hasWeakCoordinateDerivative`: membership is
+* `UnitAddTorus.periodicW12Submodule`: the closed graph in the value-gradient jet space.
+* `UnitAddTorus.PeriodicW12`: the resulting complete Hilbert space.
+* `UnitAddTorus.mem_periodicW12Submodule_iff_hasWeakCoordinateDerivative`: membership is
   componentwise weak coordinate differentiability.
-* `TauCeti.UnitAddTorus.PeriodicW12.ext_value`: a periodic Sobolev class is determined by its
+* `UnitAddTorus.PeriodicW12.ext_value`: a periodic Sobolev class is determined by its
   value class.
 -/
 
@@ -42,7 +42,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ENNReal InnerProductSpace
@@ -407,4 +407,4 @@ instance : CompleteSpace (PeriodicW12 d) :=
 
 end PeriodicW12
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

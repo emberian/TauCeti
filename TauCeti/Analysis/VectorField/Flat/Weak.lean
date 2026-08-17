@@ -30,21 +30,21 @@ asserted here; those require separate multiplication, integrability, and density
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.HasWeakGradient`: a componentwise weak-gradient candidate.
-* `TauCeti.UnitAddTorus.HasWeakJacobian`: a componentwise weak-Jacobian candidate.
-* `TauCeti.UnitAddTorus.weakDivergence`: diagonal trace of a weak-Jacobian candidate.
-* `TauCeti.UnitAddTorus.HasWeakDivergence`: candidate-independent weak divergence relation.
-* `TauCeti.UnitAddTorus.WeaklyDivergenceFree`: weak incompressibility.
-* `TauCeti.UnitAddTorus.HasWeakDivergence.integral_test_mul_eq_neg_integral_pairing_gradient`:
+* `UnitAddTorus.HasWeakGradient`: a componentwise weak-gradient candidate.
+* `UnitAddTorus.HasWeakJacobian`: a componentwise weak-Jacobian candidate.
+* `UnitAddTorus.weakDivergence`: diagonal trace of a weak-Jacobian candidate.
+* `UnitAddTorus.HasWeakDivergence`: candidate-independent weak divergence relation.
+* `UnitAddTorus.WeaklyDivergenceFree`: weak incompressibility.
+* `UnitAddTorus.HasWeakDivergence.integral_test_mul_eq_neg_integral_pairing_gradient`:
   the smooth-test divergence/gradient adjoint identity.
-* `TauCeti.UnitAddTorus.hasWeakJacobian_jacobian`: agreement with the classical Jacobian.
+* `UnitAddTorus.hasWeakJacobian_jacobian`: agreement with the classical Jacobian.
 -/
 
 public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped BigOperators ENNReal
@@ -352,4 +352,4 @@ theorem weaklyDivergenceFree_of_divergence_eq_zero (u : VectorField d)
   rw [← divergence_apply]
   exact (hdiv x).symm
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

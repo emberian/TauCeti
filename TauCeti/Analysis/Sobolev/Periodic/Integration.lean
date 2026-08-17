@@ -36,19 +36,17 @@ the integration-by-parts identity as the defining relation for periodic weak der
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.coordinateSplit`: split off any coordinate of a finite unit torus.
-* `TauCeti.UnitAddTorus.coordinateSplit_volumePreserving`: the split preserves Haar volume.
-* `TauCeti.UnitAddTorus.coordinateDerivative`: the classical derivative in one torus coordinate.
-* `TauCeti.UnitAddTorus.coordinateDerivative_mul`: the intrinsic coordinate Leibniz rule.
-* `TauCeti.UnitAddTorus.integral_mul_coordinateDerivative_eq_neg`: smooth periodic integration
+* `UnitAddTorus.coordinateSplit`: split off any coordinate of a finite unit torus.
+* `UnitAddTorus.coordinateSplit_volumePreserving`: the split preserves Haar volume.
+* `UnitAddTorus.coordinateDerivative`: the classical derivative in one torus coordinate.
+* `UnitAddTorus.coordinateDerivative_mul`: the intrinsic coordinate Leibniz rule.
+* `UnitAddTorus.integral_mul_coordinateDerivative_eq_neg`: smooth periodic integration
   by parts on `UnitAddTorus d`.
 -/
 
 public section
 
 noncomputable section
-
-namespace TauCeti
 
 open _root_.Function MeasureTheory Set
 open scoped Interval
@@ -342,7 +340,7 @@ private theorem coordinateSlice_integration_by_parts
         coordinateSlice f i y a * coordinateSliceDerivative g i y a) =
       -(∫ a : _root_.UnitAddCircle,
         coordinateSliceDerivative f i y a * coordinateSlice g i y a) := by
-  have h := TauCeti.AddCircle.integral_mul_deriv_eq_neg_deriv_mul_of_periodic
+  have h := AddCircle.integral_mul_deriv_eq_neg_deriv_mul_of_periodic
     hf hg (coordinateSliceLift_periodic f i y) (coordinateSliceLift_periodic g i y)
   simpa only [liftIoc_mul, liftIoc_coordinateSliceLift, coordinateSliceDerivative,
     periodicLift_eq_liftIoc] using h
@@ -440,5 +438,3 @@ theorem deriv_firstCosineLift (r : ℝ) :
 end Normalization
 
 end UnitAddTorus
-
-end TauCeti

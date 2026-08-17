@@ -25,13 +25,13 @@ This advances the finite-product and periodic parts of Layer 0, items 1 and 3, i
 
 ## Main declarations
 
-* `TauCeti.UnitAddTorus.PeriodicVectorW12`: the finite Hilbert product of scalar periodic
+* `UnitAddTorus.PeriodicVectorW12`: the finite Hilbert product of scalar periodic
   `W¹,²` spaces.
-* `TauCeti.UnitAddTorus.PeriodicVectorW12.valueL` and `.weakJacobianL`: continuous quotient-level
+* `UnitAddTorus.PeriodicVectorW12.valueL` and `.weakJacobianL`: continuous quotient-level
   value and weak-Jacobian maps.
-* `TauCeti.UnitAddTorus.PeriodicVectorW12.weakDivergenceL`: bounded linear weak divergence.
-* `TauCeti.UnitAddTorus.periodicDivergenceFreeW12Submodule`: its closed kernel.
-* `TauCeti.UnitAddTorus.mem_periodicDivergenceFreeW12Submodule_iff_weaklyDivergenceFree`:
+* `UnitAddTorus.PeriodicVectorW12.weakDivergenceL`: bounded linear weak divergence.
+* `UnitAddTorus.periodicDivergenceFreeW12Submodule`: its closed kernel.
+* `UnitAddTorus.mem_periodicDivergenceFreeW12Submodule_iff_weaklyDivergenceFree`:
   equivalence with representative-level weak incompressibility.
 -/
 
@@ -39,7 +39,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ENNReal
@@ -258,11 +258,11 @@ theorem hasWeakJacobian (u : PeriodicVectorW12 d) :
 canonical weak-Jacobian representative. -/
 theorem weakDivergence_ae_eq_representative (u : PeriodicVectorW12 d) :
     weakDivergence u =ᵐ[volume]
-      TauCeti.UnitAddTorus.weakDivergence (weakJacobianRepresentative u) := by
+      UnitAddTorus.weakDivergence (weakJacobianRepresentative u) := by
   rw [weakDivergence_eq_sum]
   filter_upwards [Lp.coeFn_fun_finsetSum Finset.univ
     (fun i ↦ weakJacobianEntry u i i)] with x hx
-  rw [TauCeti.UnitAddTorus.weakDivergence_apply]
+  rw [UnitAddTorus.weakDivergence_apply]
   simpa only [weakJacobianRepresentative] using hx
 
 /-- The quotient-level weak divergence represents the weak divergence of the canonical vector
@@ -366,4 +366,4 @@ instance : CompleteSpace (PeriodicDivergenceFreeW12 d) :=
 
 end PeriodicDivergenceFreeW12
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus

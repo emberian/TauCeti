@@ -43,7 +43,7 @@ public section
 
 noncomputable section
 
-namespace TauCeti.UnitAddTorus
+namespace UnitAddTorus
 
 open MeasureTheory
 open scoped ENNReal
@@ -312,4 +312,4 @@ theorem norm_sq_toLp_le_inv_four_pi_sq_mul_sum_weakGradient
     norm_sq_toLp_eq_integral_sq (D i) (hD i)
   simpa only [hcoord] using hp
 
-end TauCeti.UnitAddTorus
+end UnitAddTorus
