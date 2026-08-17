@@ -139,6 +139,12 @@ end Mean
 
 section FourierZeroMode
 
+/-- Complexification commutes with the normalized mean of an integrable real field. -/
+theorem mean_complex_ofReal (f : _root_.UnitAddTorus d → ℝ) (_hf : Integrable f) :
+    mean (E := ℂ) (fun x ↦ (f x : ℂ)) = (mean (E := ℝ) f : ℂ) := by
+  unfold mean
+  exact integral_complex_ofReal
+
 /-- Mathlib's zero multivariate Fourier coefficient is exactly the normalized spatial mean. -/
 @[simp]
 theorem mFourierCoeff_zero_eq_mean (f : _root_.UnitAddTorus d → ℂ) :
