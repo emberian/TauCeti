@@ -31,14 +31,15 @@ real slice; `TauCeti.Function.Periodic.deriv` verifies that it descends to the c
 particular, the half-open representative used to prove the integral identity does not occur in
 the derivative's definition or the main theorem's statement.
 
-This is the smooth endpoint of the construction. A later module can use the integration-by-parts
-identity as the defining relation for periodic weak derivatives.
+This is the smooth endpoint of the construction. The companion `Periodic.WeakDeriv` module uses
+the integration-by-parts identity as the defining relation for periodic weak derivatives.
 
 ## Main declarations
 
 * `TauCeti.UnitAddTorus.coordinateSplit`: split off any coordinate of a finite unit torus.
 * `TauCeti.UnitAddTorus.coordinateSplit_volumePreserving`: the split preserves Haar volume.
 * `TauCeti.UnitAddTorus.coordinateDerivative`: the classical derivative in one torus coordinate.
+* `TauCeti.UnitAddTorus.coordinateDerivative_mul`: the intrinsic coordinate Leibniz rule.
 * `TauCeti.UnitAddTorus.integral_mul_coordinateDerivative_eq_neg`: smooth periodic integration
   by parts on `UnitAddTorus d`.
 -/
@@ -195,6 +196,14 @@ theorem contDiffAlongCoordinate_const (c : ℝ) (i : d) :
   intro y
   exact contDiff_const
 
+omit [Fintype d] in
+/-- Coordinatewise continuous differentiability is preserved by pointwise multiplication. -/
+theorem ContDiffAlongCoordinate.mul {f g : _root_.UnitAddTorus d → ℝ} {i : d}
+    (hf : ContDiffAlongCoordinate f i) (hg : ContDiffAlongCoordinate g i) :
+    ContDiffAlongCoordinate (fun x ↦ f x * g x) i := by
+  intro y
+  exact (hf y).mul (hg y)
+
 /-- A periodic lift agrees with evaluation through the half-open fundamental domain. -/
 private theorem periodicLift_eq_liftIoc {f : ℝ → ℝ} (hf : Periodic f 1)
     (a : _root_.UnitAddCircle) :
@@ -224,6 +233,45 @@ theorem coordinateDerivative_const (c : ℝ) (i : d) (x : _root_.UnitAddTorus d)
   rw [periodicLift_eq_liftIoc]
   rw [hfun, deriv_const']
   rfl
+
+omit [Fintype d] in
+/-- Leibniz rule for the intrinsic classical coordinate derivative on a finite unit torus. -/
+theorem coordinateDerivative_mul (f g : _root_.UnitAddTorus d → ℝ) (i : d)
+    (x : _root_.UnitAddTorus d) (hf : ContDiffAlongCoordinate f i)
+    (hg : ContDiffAlongCoordinate g i) :
+    coordinateDerivative (fun z ↦ f z * g z) i x =
+      coordinateDerivative f i x * g x + f x * coordinateDerivative g i x := by
+  unfold coordinateDerivative
+  let z := coordinateSplit i x
+  change
+    (TauCeti.Function.Periodic.deriv
+      (coordinateSliceLift_periodic (fun y ↦ f y * g y) i z.2)).lift z.1 =
+        (TauCeti.Function.Periodic.deriv
+          (coordinateSliceLift_periodic f i z.2)).lift z.1 * g x +
+        f x * (TauCeti.Function.Periodic.deriv
+          (coordinateSliceLift_periodic g i z.2)).lift z.1
+  rw [periodicLift_eq_liftIoc, periodicLift_eq_liftIoc, periodicLift_eq_liftIoc]
+  have hslice : coordinateSliceLift (fun y ↦ f y * g y) i z.2 =
+      fun r ↦ coordinateSliceLift f i z.2 r * coordinateSliceLift g i z.2 r := rfl
+  rw [hslice]
+  have hderiv : deriv (fun r ↦
+      coordinateSliceLift f i z.2 r * coordinateSliceLift g i z.2 r) =
+      fun r ↦ deriv (coordinateSliceLift f i z.2) r * coordinateSliceLift g i z.2 r +
+        coordinateSliceLift f i z.2 r * deriv (coordinateSliceLift g i z.2) r := by
+    funext r
+    exact ((((hf z.2).differentiable one_ne_zero).differentiableAt.hasDerivAt).mul
+      (((hg z.2).differentiable one_ne_zero).differentiableAt.hasDerivAt)).deriv
+  rw [hderiv]
+  change
+    _root_.AddCircle.liftIoc 1 0
+      (fun r ↦ deriv (coordinateSliceLift f i z.2) r * coordinateSliceLift g i z.2 r +
+        coordinateSliceLift f i z.2 r * deriv (coordinateSliceLift g i z.2) r) z.1 = _
+  simp only [_root_.AddCircle.liftIoc]
+  simp only [Function.comp_apply, domRestrict_apply, coordinateSliceLift,
+    coordinateSlice, _root_.AddCircle.coe_equivIoc]
+  have hz : (coordinateSplit i).symm z = x := by
+    exact (coordinateSplit i).symm_apply_apply x
+  rw [hz]
 
 private def coordinateSliceDerivative (f : _root_.UnitAddTorus d → ℝ) (i : d)
     (y : CoordinateComplement d i) (a : _root_.UnitAddCircle) : ℝ :=
