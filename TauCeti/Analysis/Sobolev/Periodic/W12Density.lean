@@ -87,6 +87,12 @@ def fourierTerm (u : PeriodicW12 d) (k : d → ℤ) : PeriodicW12 d :=
   realMFourierAtom
     (_root_.UnitAddTorus.mFourierCoeff (fun x ↦ (value u x : ℂ)) k) k
 
+/-- Unfolding formula for one real Fourier term. -/
+theorem fourierTerm_eq_realMFourierAtom (u : PeriodicW12 d) (k : d → ℤ) :
+    fourierTerm u k = realMFourierAtom
+      (_root_.UnitAddTorus.mFourierCoeff (fun x ↦ (value u x : ℂ)) k) k := by
+  rfl
+
 /-- The values of the real Fourier terms sum unconditionally to the value of `u` in `L²`.
 
 This is quotient-level convergence, not pointwise convergence. -/
@@ -316,6 +322,11 @@ theorem hasSum_fourierTerm (u : PeriodicW12 d) :
 def fourierTruncation (u : PeriodicW12 d) (S : Finset (d → ℤ)) :
     PeriodicW12 d :=
   ∑ k ∈ S, fourierTerm u k
+
+/-- Unfolding formula for a finite real Fourier truncation. -/
+theorem fourierTruncation_eq_sum (u : PeriodicW12 d) (S : Finset (d → ℤ)) :
+    fourierTruncation u S = ∑ k ∈ S, fourierTerm u k := by
+  rfl
 
 /-- A periodic `W¹,²` class is a real trigonometric polynomial when it is a finite sum of the
 real Fourier atoms.  Complex amplitudes are allowed because `realMFourierAtom` takes the real
