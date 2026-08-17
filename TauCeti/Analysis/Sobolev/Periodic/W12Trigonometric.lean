@@ -193,6 +193,13 @@ Its value is `re (a * mFourier k)` and its weak gradient carries the multiplier
 def realMFourierAtom (a : ℂ) (k : d → ℤ) : PeriodicW12 d :=
   a.re • mFourierReW12 k - a.im • mFourierImW12 k
 
+/-- The real Fourier atom with zero amplitude is the zero Sobolev class. -/
+@[simp]
+theorem realMFourierAtom_zero (k : d → ℤ) :
+    realMFourierAtom (0 : ℂ) k = 0 := by
+  rw [realMFourierAtom]
+  simp
+
 /-- The value class of a real Fourier atom has the expected real trigonometric representative. -/
 theorem value_realMFourierAtom_ae (a : ℂ) (k : d → ℤ) :
     value (realMFourierAtom a k) =ᵐ[volume]
