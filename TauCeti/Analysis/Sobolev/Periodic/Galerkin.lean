@@ -24,11 +24,16 @@ For a finite frequency set `S`, real coefficient synthesis has finite-dimensiona
 finite-dimensional closed Galerkin subspace.  The explicit Fourier truncations belong to these
 subspaces and converge in the full energy graph norm, so their union is dense.
 
-This is the first part of Layer 7, item 1, of the `IncompressibleFlows` roadmap.  It does **not**
-yet construct the canonical orthogonal projections, prove commutation with the Leray or Stokes
-operators, or extend nonlinear cancellation to the finite-dimensional evolution system.  In
-particular, arbitrary finite frequency sets are used only for synthesis and approximation; their
-real truncation maps are not claimed to be idempotent projections.
+The closed finite-dimensional spaces admit canonical orthogonal projections in the energy graph
+inner product.  These maps are contractive, symmetric, idempotent, and converge strongly to the
+identity along the directed net of finite frequency sets.  The proof of convergence deliberately
+does not identify the projection with the raw real Fourier truncation: arbitrary finite frequency
+sets need not be symmetric under negation, so those truncations are used only as convergent
+competitors in the same Galerkin space.
+
+This advances Layer 7, item 1, of the `IncompressibleFlows` roadmap.  It does **not** yet prove
+commutation with the Leray or Stokes operators or extend nonlinear cancellation to the
+finite-dimensional evolution system.
 
 ## Main declarations
 
@@ -36,6 +41,8 @@ real truncation maps are not claimed to be idempotent projections.
   incompressibility.
 * `PeriodicMeanZeroDivergenceFreeW12.fourierTruncation`: constraint-preserving energy truncation.
 * `periodicGalerkinSubmodule`: a finite-dimensional energy subspace at finite frequency support.
+* `periodicGalerkinProjectionL`: its canonical energy-orthogonal projection.
+* `tendsto_periodicGalerkinProjectionL`: strong graph-norm convergence to the identity.
 * `dense_isFiniteGalerkinField`: graph-norm density of finite incompressible Fourier fields.
 -/
 
@@ -269,6 +276,153 @@ def periodicGalerkinClosedSubmodule (S : Finset (d → ℤ)) :
     ClosedSubmodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) where
   toSubmodule := periodicGalerkinSubmodule S
   isClosed' := Submodule.closed_of_finiteDimensional _
+
+/-- Forgetting closedness recovers the algebraic finite-frequency Galerkin subspace. -/
+@[simp]
+theorem periodicGalerkinClosedSubmodule_toSubmodule (S : Finset (d → ℤ)) :
+    (periodicGalerkinClosedSubmodule S).toSubmodule = periodicGalerkinSubmodule S := by
+  rfl
+
+/-- The orthogonal projection onto a finite-frequency Galerkin subspace, using the energy-space
+graph inner product. -/
+def periodicGalerkinProjectionL (S : Finset (d → ℤ)) :
+    PeriodicMeanZeroDivergenceFreeW12 d →L[ℝ]
+      PeriodicMeanZeroDivergenceFreeW12 d :=
+  Submodule.starProjection (𝕜 := ℝ)
+    (E := PeriodicMeanZeroDivergenceFreeW12 d)
+    (periodicGalerkinClosedSubmodule S).toSubmodule
+
+/-- Every Galerkin projection lies in its finite-frequency subspace. -/
+theorem periodicGalerkinProjectionL_mem
+    (S : Finset (d → ℤ)) (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    periodicGalerkinProjectionL S u ∈ periodicGalerkinSubmodule S := by
+  exact Submodule.starProjection_apply_mem
+    (periodicGalerkinClosedSubmodule S).toSubmodule u
+
+/-- A Galerkin projection fixes exactly its Galerkin subspace. -/
+theorem periodicGalerkinProjectionL_eq_self_iff
+    (S : Finset (d → ℤ)) (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    periodicGalerkinProjectionL S u = u ↔ u ∈ periodicGalerkinSubmodule S := by
+  exact Submodule.starProjection_eq_self_iff
+
+/-- The range of the Galerkin projector is exactly the finite-frequency Galerkin subspace. -/
+theorem range_periodicGalerkinProjectionL (S : Finset (d → ℤ)) :
+    (periodicGalerkinProjectionL S).range = periodicGalerkinSubmodule S := by
+  apply le_antisymm
+  · rintro _ ⟨u, rfl⟩
+    exact periodicGalerkinProjectionL_mem S u
+  · intro u hu
+    exact ⟨u, (periodicGalerkinProjectionL_eq_self_iff S u).mpr hu⟩
+
+/-- The range of each Galerkin projector is finite-dimensional. -/
+theorem finiteDimensional_range_periodicGalerkinProjectionL (S : Finset (d → ℤ)) :
+    FiniteDimensional ℝ (periodicGalerkinProjectionL S).range := by
+  rw [range_periodicGalerkinProjectionL]
+  infer_instance
+
+/-- Finite-frequency orthogonal Galerkin projection is idempotent. -/
+@[simp]
+theorem periodicGalerkinProjectionL_idem
+    (S : Finset (d → ℤ)) (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    periodicGalerkinProjectionL S (periodicGalerkinProjectionL S u) =
+      periodicGalerkinProjectionL S u :=
+  (periodicGalerkinProjectionL_eq_self_iff S _).mpr (periodicGalerkinProjectionL_mem S u)
+
+/-- Orthogonal Galerkin projection is `1`-Lipschitz in the energy graph metric. -/
+theorem periodicGalerkinProjectionL_lipschitzWith
+    (S : Finset (d → ℤ)) :
+    LipschitzWith 1 (periodicGalerkinProjectionL S) :=
+  by
+    let nag : NormedAddCommGroup (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+    let ips : InnerProductSpace ℝ (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+    let K : @Submodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) Real.semiring
+        nag.toAddCommGroup.toAddCommMonoid ips.toNormedSpace.toModule :=
+      (periodicGalerkinClosedSubmodule S).toSubmodule
+    have h : LipschitzWith 1 K.starProjection :=
+      @Submodule.lipschitzWith_starProjection ℝ
+        (PeriodicMeanZeroDivergenceFreeW12 d) _ nag ips K inferInstance
+    simpa only [periodicGalerkinProjectionL, K] using h
+
+/-- Orthogonal Galerkin projection is symmetric in the energy-space inner product. -/
+theorem inner_periodicGalerkinProjectionL_left_eq_right
+    (S : Finset (d → ℤ)) (u v : PeriodicMeanZeroDivergenceFreeW12 d) :
+    inner ℝ (periodicGalerkinProjectionL S u) v =
+      inner ℝ u (periodicGalerkinProjectionL S v) := by
+  let nag : NormedAddCommGroup (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+  let ips : InnerProductSpace ℝ (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+  let K : @Submodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) Real.semiring
+      nag.toAddCommGroup.toAddCommMonoid ips.toNormedSpace.toModule :=
+    (periodicGalerkinClosedSubmodule S).toSubmodule
+  have h := @Submodule.inner_starProjection_left_eq_right ℝ
+    (PeriodicMeanZeroDivergenceFreeW12 d) _ nag ips K inferInstance u v
+  simpa only [periodicGalerkinProjectionL, K] using h
+
+/-- The residual of an orthogonal Galerkin projection is orthogonal to every vector in the
+finite-frequency Galerkin subspace. -/
+theorem inner_sub_periodicGalerkinProjectionL_eq_zero
+    (S : Finset (d → ℤ)) (u v : PeriodicMeanZeroDivergenceFreeW12 d)
+    (hv : v ∈ periodicGalerkinSubmodule S) :
+    inner ℝ (u - periodicGalerkinProjectionL S u) v = 0 := by
+  let nag : NormedAddCommGroup (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+  let ips : InnerProductSpace ℝ (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+  let K : @Submodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) Real.semiring
+      nag.toAddCommGroup.toAddCommMonoid ips.toNormedSpace.toModule :=
+    (periodicGalerkinClosedSubmodule S).toSubmodule
+  have h := @Submodule.starProjection_inner_eq_zero ℝ
+    (PeriodicMeanZeroDivergenceFreeW12 d) _ nag ips K inferInstance u v (by exact hv)
+  simpa only [periodicGalerkinProjectionL, K] using h
+
+/-- Orthogonal Galerkin projection is norm-contracting in the energy graph norm. -/
+theorem norm_periodicGalerkinProjectionL_le
+    (S : Finset (d → ℤ)) (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    ‖periodicGalerkinProjectionL S u‖ ≤ ‖u‖ := by
+  let nag : NormedAddCommGroup (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+  let ips : InnerProductSpace ℝ (PeriodicMeanZeroDivergenceFreeW12 d) := inferInstance
+  let K : @Submodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) Real.semiring
+      nag.toAddCommGroup.toAddCommMonoid ips.toNormedSpace.toModule :=
+    (periodicGalerkinClosedSubmodule S).toSubmodule
+  have h := @Submodule.norm_starProjection_apply_le ℝ
+    (PeriodicMeanZeroDivergenceFreeW12 d) _ nag ips K inferInstance u
+  simpa only [periodicGalerkinProjectionL, K] using h
+
+/-- The Galerkin projector fixes the explicit constraint-preserving Fourier truncation. -/
+@[simp]
+theorem periodicGalerkinProjectionL_fourierTruncation
+    (S : Finset (d → ℤ)) (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    periodicGalerkinProjectionL S (PeriodicMeanZeroDivergenceFreeW12.fourierTruncation u S) =
+      PeriodicMeanZeroDivergenceFreeW12.fourierTruncation u S :=
+  (periodicGalerkinProjectionL_eq_self_iff S _).mpr
+    (PeriodicMeanZeroDivergenceFreeW12.fourierTruncation_mem_periodicGalerkinSubmodule u S)
+
+/-- The orthogonal projection error is controlled by twice the error of the explicit Fourier
+truncation in the same finite-frequency space. -/
+theorem dist_periodicGalerkinProjectionL_le_two_mul_dist_fourierTruncation
+    (S : Finset (d → ℤ)) (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    dist (periodicGalerkinProjectionL S u) u ≤
+      2 * dist (PeriodicMeanZeroDivergenceFreeW12.fourierTruncation u S) u := by
+  let q := PeriodicMeanZeroDivergenceFreeW12.fourierTruncation u S
+  calc
+    dist (periodicGalerkinProjectionL S u) u ≤
+        dist (periodicGalerkinProjectionL S u) q + dist q u :=
+      dist_triangle _ _ _
+    _ = dist (periodicGalerkinProjectionL S u) (periodicGalerkinProjectionL S q) +
+        dist q u := by rw [periodicGalerkinProjectionL_fourierTruncation]
+    _ ≤ 1 * dist u q + dist q u := by
+      gcongr
+      exact (periodicGalerkinProjectionL_lipschitzWith S).dist_le_mul u q
+    _ = 2 * dist q u := by rw [one_mul, dist_comm u q]; ring
+
+/-- Finite-frequency orthogonal Galerkin projections converge strongly to the identity in the
+full energy graph norm. -/
+theorem tendsto_periodicGalerkinProjectionL
+    (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    Tendsto (fun S : Finset (d → ℤ) ↦ periodicGalerkinProjectionL S u) atTop (nhds u) := by
+  apply tendsto_iff_dist_tendsto_zero.mpr
+  refine squeeze_zero (fun _ ↦ dist_nonneg) (fun S ↦
+    dist_periodicGalerkinProjectionL_le_two_mul_dist_fourierTruncation S u) ?_
+  have hdist := tendsto_iff_dist_tendsto_zero.mp
+    (PeriodicMeanZeroDivergenceFreeW12.tendsto_fourierTruncation u)
+  simpa only [mul_zero] using tendsto_const_nhds.mul hdist
 
 /-- An energy field with finite Galerkin support. -/
 def IsFiniteGalerkinField (u : PeriodicMeanZeroDivergenceFreeW12 d) : Prop :=
