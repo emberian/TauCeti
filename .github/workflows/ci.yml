@@ -152,6 +152,13 @@ jobs:
       - name: Environment lint (default linters + docstring scan vs grandfathered baseline)
         run: bash scripts/lint-env.sh
 
+      # Source style lint. The wrapper runs Mathlib's copyright-header checks directly, then
+      # generates an import-all module under .lake/ for lint-style's text-based checks. Both
+      # explicit discovery paths are needed because the deliberately empty TauCeti.lean has no
+      # transitive closure and also makes the command header linter skip every library module.
+      - name: Text-based style lint (including file headers)
+        run: bash scripts/lint-style.sh --github
+
       # --- Lake artifact-cache publish (dormant until configured) ---------------------
       # Publish TauCeti's OWN oleans (root-package only) to the Lake cache, so pr-build can
       # fetch them and recompile only a PR's changed modules instead of the whole library.

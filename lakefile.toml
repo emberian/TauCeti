@@ -28,7 +28,7 @@ globs = ["TauCeti.*"]
 # `.github/workflows/pr-build.yml`; only files that already exist may grow up to 1500. Both
 # `longFile` and `longFileDefValue` must be set to the same value, or the linter nags to
 # remove a `set_option` on every short file (fatal under `warningAsError`).
-leanOptions = { weak.linter.mathlibStandardSet = true, weak.linter.style.longFile = 1500, weak.linter.style.longFileDefValue = 1500, weak.linter.style.header = false, warningAsError = true }
+leanOptions = { weak.linter.mathlibStandardSet = true, weak.linter.style.longFile = 1500, weak.linter.style.longFileDefValue = 1500, weak.linter.style.header = true, warningAsError = true }
 
 
 # Human-owned governance: the axiom-allowlist audit (`lake exe axioms`). Inspects the
@@ -46,3 +46,10 @@ root = "scripts.Axioms"
 [[lean_exe]]
 name = "module-system"
 root = "scripts.ModuleSystem"
+
+# Human-owned governance: the copyright-header audit used by scripts/lint-style.sh. Mathlib's
+# header linter skips modules absent from the library root; TauCeti.lean is intentionally empty,
+# so this executable applies the linter's public copyrightHeaderChecks directly to every source.
+[[lean_exe]]
+name = "header-style"
+root = "scripts.HeaderStyle"
