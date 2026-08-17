@@ -110,7 +110,9 @@ theorem mFourierCoeff_toLp_complexification
   filter_upwards [hcoe'] with x hx
   rw [hx]
 
-private theorem mFourierCoeff_toLp_pi {g : _root_.UnitAddTorus d → ℂ}
+/-- Under Mathlib's normalized product Haar measure, the Fourier coefficient of an `L²` class
+agrees with that of the representative used to construct it. -/
+theorem mFourierCoeff_toLp_normalizedHaar {g : _root_.UnitAddTorus d → ℂ}
     (hg : MemLp g 2 (Measure.pi fun _ : d ↦ AddCircle.haarAddCircle)) (k : d → ℤ) :
     _root_.UnitAddTorus.mFourierCoeff (hg.toLp g) k =
       _root_.UnitAddTorus.mFourierCoeff g k := by
@@ -229,7 +231,7 @@ theorem hasSum_mFourierDirichletTerm_of_weakCoordinateDerivatives
           _root_.UnitAddTorus.mFourierCoeff F k := by
     calc
       _ = _root_.UnitAddTorus.mFourierCoeff (fun x ↦ (D i x : ℂ)) k :=
-        mFourierCoeff_toLp_pi (hDπ i) k
+        mFourierCoeff_toLp_normalizedHaar (hDπ i) k
       _ = (2 * Real.pi * Complex.I * (k i)) *
           _root_.UnitAddTorus.mFourierCoeff (fun x ↦ (f x : ℂ)) k :=
         (hweak i).mFourierCoeff_ofReal k
