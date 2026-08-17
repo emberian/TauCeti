@@ -116,6 +116,12 @@ def ContDiffVectorField (u : VectorField d) : Prop :=
 
 omit [Fintype d] in
 @[simp]
+theorem componentDerivative_apply (u : VectorField d) (x : _root_.UnitAddTorus d) (i j : d) :
+    componentDerivative u i j x = coordinateDerivative (fun z ↦ u z j) i x := by
+  rfl
+
+omit [Fintype d] in
+@[simp]
 theorem gradient_apply (f : ScalarField d) (x : _root_.UnitAddTorus d) (i : d) :
     gradient f x i = coordinateDerivative f i x := by
   simp only [gradient]
@@ -125,6 +131,24 @@ omit [Fintype d] in
 theorem jacobian_apply (u : VectorField d) (x : _root_.UnitAddTorus d) (i j : d) :
     jacobian u x i j = componentDerivative u i j x := by
   simp only [jacobian]
+
+omit [DecidableEq d] in
+@[simp]
+theorem pairing_apply (u v : VectorField d) (x : _root_.UnitAddTorus d) :
+    pairing u v x = ∑ i, u x i * v x i := by
+  rfl
+
+@[simp]
+theorem divergence_apply (u : VectorField d) (x : _root_.UnitAddTorus d) :
+    divergence u x = ∑ i, jacobian u x i i := by
+  rfl
+
+omit [Fintype d] in
+/-- Extract coordinatewise smoothness from a smooth flat vector field. -/
+theorem ContDiffVectorField.component {u : VectorField d} (hu : ContDiffVectorField u)
+    (i j : d) :
+    ContDiffAlongCoordinate (fun x ↦ u x j) i := by
+  exact hu i j
 
 omit [Fintype d] in
 @[simp]
