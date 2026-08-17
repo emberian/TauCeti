@@ -121,6 +121,13 @@ theorem componentDerivative_apply (u : VectorField d) (x : _root_.UnitAddTorus d
   rfl
 
 omit [Fintype d] in
+/-- A component derivative is the coordinate derivative of the selected scalar component. -/
+theorem componentDerivative_eq (u : VectorField d) (i j : d) :
+    componentDerivative u i j = coordinateDerivative (fun z ↦ u z j) i := by
+  funext x
+  exact componentDerivative_apply u x i j
+
+omit [Fintype d] in
 @[simp]
 theorem gradient_apply (f : ScalarField d) (x : _root_.UnitAddTorus d) (i : d) :
     gradient f x i = coordinateDerivative f i x := by
@@ -141,6 +148,11 @@ theorem pairing_apply (u v : VectorField d) (x : _root_.UnitAddTorus d) :
 @[simp]
 theorem divergence_apply (u : VectorField d) (x : _root_.UnitAddTorus d) :
     divergence u x = ∑ i, jacobian u x i i := by
+  rfl
+
+@[simp]
+theorem tensorDivergence_apply (T : TensorField d) (x : _root_.UnitAddTorus d) (j : d) :
+    tensorDivergence T x j = ∑ i, coordinateDerivative (fun z ↦ T z i j) i x := by
   rfl
 
 omit [Fintype d] in
