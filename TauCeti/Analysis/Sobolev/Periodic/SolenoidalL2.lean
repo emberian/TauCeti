@@ -73,7 +73,6 @@ theorem periodicScalarL2MeanL_apply
   rw [← indicatorConstLp_univ, L2.inner_indicatorConstLp_one]
   simp
 
-@[simp]
 theorem periodicScalarL2MeanL_const (c : ℝ) :
     periodicScalarL2MeanL
       (Lp.const 2 (volume : Measure (_root_.UnitAddTorus d)) c) = c := by
@@ -83,14 +82,14 @@ theorem periodicScalarL2MeanL_const (c : ℝ) :
   simp
 
 /-- Assemble a finite family of continuous linear maps into an `L²` Hilbert product. -/
-private def piLpFamilyL {ι X : Type*} [Fintype ι]
+private def piLpFamilyL {ι X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
     {Y : ι → Type*} [∀ i, NormedAddCommGroup (Y i)] [∀ i, NormedSpace ℝ (Y i)]
     (f : ∀ i, X →L[ℝ] Y i) : X →L[ℝ] PiLp 2 Y :=
   (PiLp.continuousLinearEquiv 2 ℝ Y).symm.toContinuousLinearMap.comp
     (ContinuousLinearMap.pi f)
 
-private theorem piLpFamilyL_apply {ι X : Type*} [Fintype ι]
+private theorem piLpFamilyL_apply {ι X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
     {Y : ι → Type*} [∀ i, NormedAddCommGroup (Y i)] [∀ i, NormedSpace ℝ (Y i)]
     (f : ∀ i, X →L[ℝ] Y i) (x : X) (i : ι) :
@@ -116,14 +115,12 @@ def periodicConstantVectorL2L : EuclideanSpace ℝ d →L[ℝ] PeriodicVectorL2 
     (Lp.constL 2 (volume : Measure (_root_.UnitAddTorus d)) ℝ).comp
       (PiLp.proj (𝕜 := ℝ) 2 (fun _ : d ↦ ℝ) j)
 
-@[simp]
 theorem periodicConstantVectorL2L_apply (c : EuclideanSpace ℝ d) (j : d) :
     periodicConstantVectorL2L c j =
       Lp.const 2 (volume : Measure (_root_.UnitAddTorus d)) (c j) := by
   rw [periodicConstantVectorL2L, piLpFamilyL_apply, ContinuousLinearMap.comp_apply,
     PiLp.proj_apply, Lp.constL_apply]
 
-@[simp]
 theorem periodicVectorL2MeanL_periodicConstantVectorL2L (c : EuclideanSpace ℝ d) :
     periodicVectorL2MeanL (periodicConstantVectorL2L c) = c := by
   apply PiLp.ext
@@ -531,7 +528,6 @@ theorem inner_periodicMeanZeroLerayProjectionL_left_eq_right
   exact Submodule.inner_starProjection_left_eq_right _ f g
 
 /-- The Leray projection fixes the value of every divergence-free periodic `W¹,²` class. -/
-@[simp]
 theorem periodicLerayProjectionL_periodicDivergenceFreeValueL
     (u : PeriodicDivergenceFreeW12 d) :
     periodicLerayProjectionL (periodicDivergenceFreeValueL u) =
@@ -549,7 +545,6 @@ theorem periodicLerayProjectionL_value_periodicDivergenceFreeW12
     periodicLerayProjectionL_periodicDivergenceFreeValueL]
 
 /-- The mean-zero Leray projection fixes every mean-zero incompressible energy value. -/
-@[simp]
 theorem periodicMeanZeroLerayProjectionL_periodicEnergyValueL
     (u : PeriodicMeanZeroDivergenceFreeW12 d) :
     periodicMeanZeroLerayProjectionL (periodicEnergyValueL u) = periodicEnergyValueL u :=

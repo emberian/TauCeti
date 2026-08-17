@@ -156,7 +156,6 @@ theorem vectorLaplacian_apply_eq_scalarLaplacian_component (u : VectorField d)
     vectorLaplacian u x j = scalarLaplacian (fun z ↦ u z j) x := by
   simp only [vectorLaplacian_apply_coordinate, scalarLaplacian_apply]
 
-@[simp]
 theorem scalarLaplacian_const (c : ℝ) (x : _root_.UnitAddTorus d) :
     scalarLaplacian (fun _ ↦ c) x = 0 := by
   simp only [scalarLaplacian_apply]
@@ -168,7 +167,6 @@ theorem scalarLaplacian_const (c : ℝ) (x : _root_.UnitAddTorus d) :
   rw [hzero]
   exact coordinateDerivative_const 0 i x
 
-@[simp]
 theorem vectorLaplacian_const (c : d → ℝ) (x : _root_.UnitAddTorus d) (j : d) :
     vectorLaplacian (fun _ ↦ c) x j = 0 := by
   rw [vectorLaplacian_apply_eq_scalarLaplacian_component]

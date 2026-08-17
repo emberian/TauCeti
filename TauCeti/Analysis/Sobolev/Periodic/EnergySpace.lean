@@ -106,7 +106,6 @@ theorem weakDeriv_const (c : ℝ) (i : d) : weakDeriv (const (d := d) c) i = 0 :
   rw [const, weakDeriv_mk]
   rfl
 
-@[simp]
 theorem mean_const (c : ℝ) :
     TauCeti.UnitAddTorus.mean (value (const (d := d) c)) = c := by
   rw [value_const, mean_eq_average, average_eq_integral,
@@ -137,14 +136,14 @@ instance : CompleteSpace (PeriodicMeanZeroW12 d) :=
 
 end PeriodicMeanZeroW12
 
-private def piLpFamilyL {ι X : Type*} [Fintype ι]
+private def piLpFamilyL {ι X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
     {Y : ι → Type*} [∀ i, NormedAddCommGroup (Y i)] [∀ i, NormedSpace ℝ (Y i)]
     (f : ∀ i, X →L[ℝ] Y i) : X →L[ℝ] PiLp 2 Y :=
   (PiLp.continuousLinearEquiv 2 ℝ Y).symm.toContinuousLinearMap.comp
     (ContinuousLinearMap.pi f)
 
-private theorem piLpFamilyL_apply {ι X : Type*} [Fintype ι]
+private theorem piLpFamilyL_apply {ι X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
     {Y : ι → Type*} [∀ i, NormedAddCommGroup (Y i)] [∀ i, NormedSpace ℝ (Y i)]
     (f : ∀ i, X →L[ℝ] Y i) (x : X) (i : ι) :

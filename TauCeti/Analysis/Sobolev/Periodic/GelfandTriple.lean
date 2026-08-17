@@ -46,14 +46,17 @@ variable {d : Type*} [Fintype d]
 
 attribute [local instance] Classical.decEq
 
+/-- The explicit finite-product inner product used to align the ambient vector `L²` instances. -/
 local instance (priority := 3000) ambientVectorL2InnerProductSpace :
     InnerProductSpace ℝ (PeriodicVectorL2 d) :=
   PiLp.innerProductSpace fun _ : d ↦ Lp ℝ 2 (volume : Measure (_root_.UnitAddTorus d))
 
+/-- The explicit finite-product inner product used to align vector `W¹,²` instances. -/
 local instance (priority := 3000) vectorW12InnerProductSpace :
     InnerProductSpace ℝ (PeriodicVectorW12 d) :=
   PiLp.innerProductSpace fun _ : d ↦ PeriodicW12 d
 
+/-- The closed-submodule normed-space instance used by the energy-space dual. -/
 local instance (priority := 4000) energyNormedSpace :
     NormedSpace ℝ (PeriodicMeanZeroDivergenceFreeW12 d) :=
   (periodicMeanZeroDivergenceFreeW12Submodule d).toSubmodule.normedSpace

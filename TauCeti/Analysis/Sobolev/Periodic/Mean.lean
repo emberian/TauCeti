@@ -158,7 +158,6 @@ theorem mean_eq_zero_iff_mFourierCoeff_zero_eq_zero (f : _root_.UnitAddTorus d �
     mean f = 0 ↔ _root_.UnitAddTorus.mFourierCoeff f 0 = 0 := by
   rw [mFourierCoeff_zero_eq_mean]
 
-@[simp]
 theorem mFourierCoeff_meanZero_zero (f : _root_.UnitAddTorus d → ℂ) (hf : Integrable f) :
     _root_.UnitAddTorus.mFourierCoeff (meanZero f) 0 = 0 := by
   rw [mFourierCoeff_zero_eq_mean, mean_meanZero f hf]
@@ -271,7 +270,6 @@ theorem mem_meanZeroSubspaceL2_iff_mFourierCoeff_zero (f : ComplexTorusL²) :
   rw [mem_meanZeroSubspaceL2_iff]
   exact mean_eq_zero_iff_mFourierCoeff_zero_eq_zero f
 
-@[simp]
 theorem mFourierCoeff_meanZeroProjectionL2_zero (f : ComplexTorusL²) :
     _root_.UnitAddTorus.mFourierCoeff
       (meanZeroProjectionL2 (d := d) (𝕜 := ℂ) f) 0 = 0 := by

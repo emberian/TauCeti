@@ -163,13 +163,11 @@ theorem ContDiffVectorField.component {u : VectorField d} (hu : ContDiffVectorFi
   exact hu i j
 
 omit [Fintype d] in
-@[simp]
 theorem componentDerivative_const (c : d → ℝ) (i j : d)
     (x : _root_.UnitAddTorus d) :
     componentDerivative (fun _ ↦ c) i j x = 0 := by
   exact coordinateDerivative_const (c j) i x
 
-@[simp]
 theorem divergence_const (c : d → ℝ) (x : _root_.UnitAddTorus d) :
     divergence (fun _ ↦ c) x = 0 := by
   simp [divergence]

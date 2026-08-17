@@ -66,13 +66,13 @@ abbrev PeriodicVectorW12 (d : Type*) [Fintype d] :=
 /-- Assemble a finite family of continuous linear maps into a Hilbert-product-valued map.
 This is the local bridge needed because Mathlib's `lpPiLpₗᵢ` concerns discrete `lp`, not Bochner
 `Lp` over a measure space. -/
-private def piLpFamilyL {ι X : Type*} [Fintype ι] [NormedAddCommGroup X] [NormedSpace ℝ X]
+private def piLpFamilyL {ι X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
     {Y : ι → Type*} [∀ i, NormedAddCommGroup (Y i)] [∀ i, NormedSpace ℝ (Y i)]
     (f : ∀ i, X →L[ℝ] Y i) : X →L[ℝ] PiLp 2 Y :=
   (PiLp.continuousLinearEquiv 2 ℝ Y).symm.toContinuousLinearMap.comp
     (ContinuousLinearMap.pi f)
 
-private theorem piLpFamilyL_apply {ι X : Type*} [Fintype ι]
+private theorem piLpFamilyL_apply {ι X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
     {Y : ι → Type*} [∀ i, NormedAddCommGroup (Y i)] [∀ i, NormedSpace ℝ (Y i)]
     (f : ∀ i, X →L[ℝ] Y i) (x : X) (i : ι) :

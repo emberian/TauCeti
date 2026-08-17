@@ -184,7 +184,6 @@ def periodicWeakStokesRieszEquiv :
     (periodicEnergyDirichletForm_isCoercive (d := d))
 
 /-- Characteristic identity of the Riesz-side weak Stokes equivalence. -/
-@[simp]
 theorem periodicWeakStokesRieszEquiv_inner
     (u v : PeriodicMeanZeroDivergenceFreeW12 d) :
     inner ℝ (periodicWeakStokesRieszEquiv (d := d) u) v =

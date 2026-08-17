@@ -121,7 +121,6 @@ theorem component_fourierTerm (u : PeriodicVectorW12 d) (k : d → ℤ) (j : d) 
   rw [fourierTerm, component_ofComponents]
 
 /-- Component `j` of the vector value class of a Fourier term. -/
-@[simp]
 theorem value_fourierTerm_apply (u : PeriodicVectorW12 d) (k : d → ℤ) (j : d) :
     value (fourierTerm u k) j =
       PeriodicW12.value (PeriodicW12.fourierTerm (component u j) k) := by
@@ -151,7 +150,6 @@ theorem component_fourierTruncation (u : PeriodicVectorW12 d)
   simp only [componentL_apply, component_fourierTerm]
 
 /-- Component `j` of the vector value class of a finite Fourier truncation. -/
-@[simp]
 theorem value_fourierTruncation_apply (u : PeriodicVectorW12 d)
     (S : Finset (d → ℤ)) (j : d) :
     value (fourierTruncation u S) j =
