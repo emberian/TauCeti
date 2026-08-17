@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Flag Mathlib namespaces recreated inside ``namespace TauCeti``.
 
-The lint finds declarations under ``TauCeti.<Mathlib namespace>`` with an argument of the
-corresponding type. Organisational namespaces, namespaces named by a declaration in the same
-file, and explicitly rooted declarations are ignored. Existing findings are grandfathered by
+The lint finds declarations under ``TauCeti.<Mathlib namespace>`` with an explicit argument of
+the corresponding type, including explicit section variables used by the declaration. Mathlib
+type namespaces are conservatively approximated by namespace commands in Mathlib's sources;
+organisational namespaces, namespaces named by a declaration in the same file, and explicitly
+rooted declarations are ignored. Existing findings are grandfathered by the grouped
 ``scripts/lint-dot-notation-baseline.txt``; update it with ``--write-baseline``.
 """
 
@@ -12,6 +14,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import hashlib
+import json
 import pathlib
 import re
 import sys
@@ -19,11 +22,12 @@ from collections import Counter
 from collections.abc import Iterable
 
 
+# These organise declarations but do not themselves name receiver types. Names such as Set,
+# Polynomial, and Nat are intentionally absent: their namespaces do name Mathlib types.
 ORGANISATIONAL = {
-    "Algebra", "AlgebraicGeometry", "Analysis", "CategoryTheory", "Combinatorics", "Complex",
-    "Filter", "Finset", "Function", "Geometry", "Int", "Lie", "LinearAlgebra", "List",
-    "MeasureTheory", "Nat", "NumberTheory", "Order", "Polynomial", "ProbabilityTheory",
-    "Real", "RingTheory", "Set", "Topology",
+    "AlgebraicGeometry", "Analysis", "CategoryTheory", "Combinatorics", "Function", "Geometry",
+    "Lie", "LinearAlgebra", "MeasureTheory", "NumberTheory", "Order", "ProbabilityTheory",
+    "RingTheory", "Topology",
 }
 
 DECLARATION_KEYWORDS = {
@@ -39,6 +43,7 @@ WORD = re.compile(r"[A-Za-z_][\w']*")
 NAMESPACE = re.compile(
     r"(?m)^(?:(?:public|private|protected|noncomputable)\s+)*namespace\s+([\w'.]+)"
 )
+TOP_LEVEL_CONNECTIVES = ("->", "→", "⟶", "⥤", "≃", "≅", "×", "⊕", "⊗", "↪", "↠")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -69,6 +74,12 @@ class Finding:
 
     def render(self) -> str:
         return f"{self.path}:{self.line}: {self.declaration}"
+
+
+@dataclasses.dataclass(frozen=True)
+class VariableBinding:
+    name: str
+    binder: str
 
 
 def strip_comments_and_strings(text: str) -> str:
@@ -115,6 +126,17 @@ def strip_comments_and_strings(text: str) -> str:
             chars[i] = " "
             in_string = True
             i += 1
+        elif chars[i] == "'" and i + 2 < len(chars) and (
+                chars[i + 1] == "\\" or chars[i + 2] == "'"):
+            end = i + 2
+            while end < len(chars) and chars[end] not in "'\n":
+                end += 1
+            if end < len(chars) and chars[end] == "'":
+                while i <= end:
+                    chars[i] = " "
+                    i += 1
+            else:
+                i += 1
         else:
             i += 1
     return "".join(chars)
@@ -145,15 +167,10 @@ def _skip_balanced(text: str, position: int) -> int:
 def _command_prefix(text: str, line_start: int) -> tuple[int, str] | None:
     """Return the declaration keyword position and keyword for a command at ``line_start``."""
     position = _skip_horizontal(text, line_start)
-    saw_attribute = False
     while text.startswith("@[", position):
-        saw_attribute = True
         position = _skip_balanced(text, position + 1)
         while position < len(text) and text[position].isspace():
             position += 1
-
-    if not saw_attribute and "\n" in text[line_start:position]:
-        return None
 
     while True:
         match = WORD.match(text, position)
@@ -214,7 +231,7 @@ def _declaration_tail(text: str, position: int) -> tuple[tuple[str, ...], str]:
         if char in "([{":
             end = _skip_balanced(text, position)
             group = text[position + 1:end - 1]
-            if _top_level_colon(group) is not None:
+            if char == "(" and _top_level_colon(group) is not None:
                 binders.append(group)
             position = end
         elif char == "\n":
@@ -252,9 +269,34 @@ def scopes(text: str) -> list[tuple[int, str, str | None]]:
     code = strip_comments_and_strings(text)
     pattern = re.compile(
         r"(?m)^(?:(?:public|private|protected|noncomputable)\s+)*"
-        r"(?P<kind>namespace|section|end)(?:\s+(?P<name>[\w'.]+))?[ \t]*$"
+        r"(?P<kind>namespace|section|mutual|end)(?:\s+(?P<name>[\w'.]+))?[ \t]*$"
     )
     return [(m.start(), m.group("kind"), m.group("name")) for m in pattern.finditer(code)]
+
+
+def variable_bindings(text: str) -> list[tuple[int, list[VariableBinding]]]:
+    code = strip_comments_and_strings(text)
+    pattern = re.compile(r"(?m)^variable\b[^\n]*(?:\n[ \t]+[^\n]*)*")
+    events: list[tuple[int, list[VariableBinding]]] = []
+    for match in pattern.finditer(code):
+        body = match.group()
+        position = len("variable")
+        bindings: list[VariableBinding] = []
+        while position < len(body):
+            if body[position] in "([{":
+                opener = body[position]
+                end = _skip_balanced(body, position)
+                group = body[position + 1:end - 1]
+                colon = _top_level_colon(group)
+                if opener == "(" and colon is not None:
+                    names = re.findall(r"(?<![\w'])[\w']+(?![\w'])", group[:colon])
+                    bindings.extend(VariableBinding(name, group) for name in names if name != "_")
+                position = end
+            else:
+                position += 1
+        if bindings:
+            events.append((match.start(), bindings))
+    return events
 
 
 def mathlib_namespaces(root: pathlib.Path) -> set[str]:
@@ -262,7 +304,10 @@ def mathlib_namespaces(root: pathlib.Path) -> set[str]:
         raise FileNotFoundError(f"Mathlib source directory not found: {root}")
     names: set[str] = set()
     for path in root.rglob("*.lean"):
-        text = strip_comments_and_strings(path.read_text(errors="ignore"))
+        raw = path.read_text(errors="ignore")
+        if "namespace" not in raw:
+            continue
+        text = strip_comments_and_strings(raw)
         for match in NAMESPACE.finditer(text):
             names.update(part for part in match.group(1).split(".") if part != "_root_")
     return names
@@ -282,7 +327,8 @@ def _binder_has_type(binder: str, namespace: str) -> bool:
         return False
     binder_type = binder[colon + 1:].lstrip()
     qualified = rf"(?:_root_\.)?(?:[\w']+\.)*{re.escape(namespace)}\b"
-    if re.match(rf"@?{qualified}", binder_type) is None:
+    match = re.match(rf"@?{qualified}", binder_type)
+    if match is None or re.match(r"\.[a-z_]", binder_type[match.end():]):
         return False
     depth = 0
     for position, char in enumerate(binder_type):
@@ -290,7 +336,8 @@ def _binder_has_type(binder: str, namespace: str) -> bool:
             depth += 1
         elif char in ")]}":
             depth -= 1
-        elif depth == 0 and (char == "→" or binder_type.startswith("->", position)):
+        elif depth == 0 and any(binder_type.startswith(op, position)
+                                for op in TOP_LEVEL_CONNECTIVES):
             return False
     return True
 
@@ -341,16 +388,19 @@ def find_violations(
             (position, "scope", (kind, name)) for position, kind, name in scopes(text)
         ]
         events.extend((declaration.position, "declaration", declaration) for declaration in parsed)
+        events.extend((position, "variables", bindings)
+                      for position, bindings in variable_bindings(text))
         events.sort(key=lambda event: event[0])
 
         stack: list[Scope] = []
+        active_variables: list[tuple[int, VariableBinding]] = []
         for _, event_kind, payload in events:
             if event_kind == "scope":
                 kind, name = payload  # type: ignore[misc]
                 if kind == "namespace":
                     assert name is not None
                     stack.append(Scope(kind, name, tuple(name.split("."))))
-                elif kind == "section":
+                elif kind in {"section", "mutual"}:
                     stack.append(Scope(kind, name, ()))
                 elif name is None:
                     if stack:
@@ -360,6 +410,13 @@ def find_violations(
                         if stack[index].matches(name):
                             del stack[index:]
                             break
+                active_variables = [(depth, binding) for depth, binding in active_variables
+                                    if depth <= len(stack)]
+                continue
+
+            if event_kind == "variables":
+                assert isinstance(payload, list)
+                active_variables.extend((len(stack), binding) for binding in payload)
                 continue
 
             declaration = payload
@@ -369,18 +426,26 @@ def find_violations(
                 continue
             if declaration.name is not None and declaration.name.startswith("_root_."):
                 continue
+            name_prefix = declaration.name.split(".")[:-1] if declaration.name else []
+            candidate_path = [*namespaces, *name_prefix]
             candidates = [
                 namespace
-                for namespace in namespaces[1:]
+                for namespace in candidate_path[1:]
                 if namespace in mathlib_namespace_names
                 and namespace not in ORGANISATIONAL
                 and namespace not in owned
             ]
+            current_variables: dict[str, str] = {}
+            for _, binding in active_variables:
+                current_variables[binding.name] = binding.binder
             matching = [
                 namespace
                 for namespace in candidates
                 if any(_binder_has_type(binder, namespace) for binder in declaration.binders)
                 or _result_has_argument_type(declaration.header, namespace)
+                or any(_binder_has_type(binder, namespace)
+                       and re.search(rf"(?<![\w']){re.escape(name)}(?![\w'])", declaration.header)
+                       for name, binder in current_variables.items())
             ]
             if not matching:
                 continue
@@ -399,11 +464,27 @@ def find_violations(
     return sorted(findings, key=lambda finding: (str(finding.path), finding.line, finding.declaration))
 
 
-def baseline_key(line: str) -> str:
-    try:
-        return line.split(": ", 1)[1]
-    except IndexError as error:
-        raise ValueError(f"malformed dot-notation baseline entry: {line}") from error
+def read_baseline(path: pathlib.Path) -> list[str]:
+    declarations: list[str] = []
+    for line in path.read_text().splitlines():
+        try:
+            _, encoded = line.split("\t", 1)
+            names = json.loads(encoded)
+        except (ValueError, json.JSONDecodeError) as error:
+            raise ValueError(f"malformed dot-notation baseline entry: {line}") from error
+        if not isinstance(names, list) or not all(isinstance(name, str) for name in names):
+            raise ValueError(f"malformed dot-notation baseline entry: {line}")
+        declarations.extend(names)
+    return declarations
+
+
+def write_baseline(path: pathlib.Path, findings: list[Finding]) -> None:
+    grouped: dict[pathlib.Path, list[str]] = {}
+    for finding in findings:
+        grouped.setdefault(finding.path, []).append(finding.declaration)
+    path.write_text("".join(
+        f"{source}\t{json.dumps(names, ensure_ascii=False, separators=(',', ':'))}\n"
+        for source, names in grouped.items()))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -431,16 +512,15 @@ def main(argv: list[str] | None = None) -> int:
     found = find_violations(sources, namespace_names)
 
     if args.write_baseline:
-        args.baseline.write_text("".join(f"{finding.render()}\n" for finding in found))
+        write_baseline(args.baseline, found)
         print(f"lint-dot-notation: wrote {len(found)} baseline entries")
         return 0
     if not args.baseline.is_file():
         print(f"lint-dot-notation: error: baseline not found: {args.baseline}", file=sys.stderr)
         return 2
 
-    baseline_lines = [line.strip() for line in args.baseline.read_text().splitlines() if line.strip()]
     try:
-        known = Counter(baseline_key(line) for line in baseline_lines)
+        known = Counter(read_baseline(args.baseline))
     except ValueError as error:
         print(f"lint-dot-notation: error: {error}", file=sys.stderr)
         return 2

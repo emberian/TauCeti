@@ -27,6 +27,7 @@ def findings(source: str, namespaces: set[str] | None = None):
 class DotNotationLintTests(unittest.TestCase):
     def test_named_section_does_not_corrupt_namespace_stack(self):
         source = """\
+public section
 namespace TauCeti
 namespace Foo
 def before (x : Foo) := x
@@ -34,11 +35,18 @@ section Chain
 def inside (x : Foo) := x
 end Chain
 def after (x : Foo) := x
+mutual
+def mutualOne (x : Foo) := x
+def mutualTwo (x : Foo) := x
+end
+def afterMutual (x : Foo) := x
 end Foo
 end TauCeti
+end
 """
         self.assertEqual([finding.declaration for finding in findings(source)],
-                         ["TauCeti.Foo.before", "TauCeti.Foo.inside", "TauCeti.Foo.after"])
+                         [f"TauCeti.Foo.{name}" for name in
+                          ("before", "inside", "after", "mutualOne", "mutualTwo", "afterMutual")])
 
     def test_attribute_anonymous_instance_and_modifiers_are_detected(self):
         source = """\
@@ -53,6 +61,8 @@ nonrec def nonrecursive (x : Foo) := x
 scoped instance namedInstance (x : Foo) : Inhabited Foo := ⟨x⟩
 partial def partialDefinition (x : Foo) := x
 unsafe def unsafeDefinition (x : Foo) := x
+def implicitOnly {x : Foo} := x
+def connective (x : Foo × Foo) := x
 class ClassDeclaration (x : Foo) : Prop where
   property : True
 structure StructureDeclaration (x : Foo) where
@@ -81,7 +91,7 @@ end TauCeti
         self.assertEqual([finding.declaration for finding in findings(source)],
                          ["TauCeti.Foo.misplaced"])
 
-    def test_only_binder_types_count(self):
+    def test_function_valued_binders_are_not_receivers(self):
         source = """\
 namespace TauCeti
 namespace Foo
@@ -94,6 +104,22 @@ end TauCeti
 """
         self.assertEqual([finding.declaration for finding in findings(source)],
                          ["TauCeti.Foo.takesFoo"])
+
+    def test_scoped_variable_and_dotted_name_are_detected(self):
+        source = """\
+namespace TauCeti
+namespace Foo
+variable (x : Foo)
+variable {y : Foo}
+def fromVariable : x = x := rfl
+def implicitVariable : y = y := rfl
+end Foo
+def Foo.dotted (x : Foo) := x
+def Foo.termType (x : Foo.term) := x
+end TauCeti
+"""
+        self.assertEqual([finding.declaration for finding in findings(source)],
+                         ["TauCeti.Foo.fromVariable", "TauCeti.Foo.dotted"])
 
     def test_owned_names_are_lowercase_and_scoped_per_file(self):
         sources = {
@@ -130,6 +156,30 @@ end TauCeti
                      "--baseline", str(baseline)])
         self.assertEqual(result, 2)
         self.assertIn("Mathlib source directory not found", stderr.getvalue())
+
+    def test_main_rejects_new_and_reports_ratchetable_findings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            mathlib = root / "Mathlib"
+            source_root = root / "TauCeti"
+            mathlib.mkdir()
+            source_root.mkdir()
+            (mathlib / "Foo.lean").write_text("namespace Foo\nend Foo\n")
+            source = source_root / "Test.lean"
+            source.write_text("namespace TauCeti\nnamespace Foo\ndef bar (x : Foo) := x\n"
+                              "end Foo\nend TauCeti\n")
+            baseline = pathlib.Path(directory) / "baseline.txt"
+            baseline.write_text("")
+            args = ["--mathlib-root", str(mathlib), "--source-root", str(source_root),
+                    "--baseline", str(baseline)]
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                self.assertEqual(lint.main(args), 1)
+                self.assertEqual(lint.main([*args, "--write-baseline"]), 0)
+                source.write_text("namespace TauCeti\ndef _root_.Foo.bar (x : Foo) := x\nend TauCeti\n")
+                self.assertEqual(lint.main(args), 0)
+            self.assertIn("1 new", stdout.getvalue())
+            self.assertIn("1 ratchetable", stdout.getvalue())
 
 
 if __name__ == "__main__":
