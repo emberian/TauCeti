@@ -145,6 +145,42 @@ theorem HasWeakCoordinateDerivative.integral_coordinateDerivative_mul_eq_neg_int
     (φ : CoordinateTestFunction d i) :
     (∫ x, coordinateDerivative φ i x * f x) = -∫ x, φ x * f' x := h.2.2 φ
 
+/-- The periodic weak coordinate derivative relation depends only on the almost-everywhere class
+of its value field. -/
+theorem HasWeakCoordinateDerivative.congr_ae
+    {f g f' : _root_.UnitAddTorus d → ℝ} {i : d}
+    (h : HasWeakCoordinateDerivative f f' i) (hfg : f =ᵐ[volume] g) :
+    HasWeakCoordinateDerivative g f' i := by
+  rw [hasWeakCoordinateDerivative_iff]
+  refine ⟨h.integrable.congr hfg, h.integrable_deriv, ?_⟩
+  intro φ
+  calc
+    (∫ x, coordinateDerivative φ i x * g x) =
+        ∫ x, coordinateDerivative φ i x * f x := by
+      apply integral_congr_ae
+      filter_upwards [hfg] with x hx
+      rw [hx]
+    _ = -∫ x, φ x * f' x :=
+      h.integral_coordinateDerivative_mul_eq_neg_integral_mul φ
+
+/-- The periodic weak coordinate derivative relation depends only on the almost-everywhere class
+of its derivative field. -/
+theorem HasWeakCoordinateDerivative.congr_ae_deriv
+    {f f' g' : _root_.UnitAddTorus d → ℝ} {i : d}
+    (h : HasWeakCoordinateDerivative f f' i) (hfg : f' =ᵐ[volume] g') :
+    HasWeakCoordinateDerivative f g' i := by
+  rw [hasWeakCoordinateDerivative_iff]
+  refine ⟨h.integrable, h.integrable_deriv.congr hfg, ?_⟩
+  intro φ
+  calc
+    (∫ x, coordinateDerivative φ i x * f x) = -∫ x, φ x * f' x :=
+      h.integral_coordinateDerivative_mul_eq_neg_integral_mul φ
+    _ = -∫ x, φ x * g' x := by
+      congr 1
+      apply integral_congr_ae
+      filter_upwards [hfg] with x hx
+      rw [hx]
+
 /-- The classical coordinate derivative of a coordinatewise `C¹` integrable field is its weak
 coordinate derivative, provided the classical derivative is integrable. -/
 theorem hasWeakCoordinateDerivative_coordinateDerivative
