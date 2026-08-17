@@ -189,9 +189,22 @@ theorem mFourierCoeff_apply (u : PeriodicVectorW12 d) (k : d → ℤ) (j : d) :
     mFourierCoeff u k j = realL2MFourierCoeff (PeriodicW12.value (component u j)) k := by
   rfl
 
+/-- Expanded evaluator formula for the vector Fourier coefficient.  This wrapper keeps the
+underlying scalar quotient definition usable across module boundaries. -/
+theorem mFourierCoeff_apply_eq_mFourierCoeff
+    (u : PeriodicVectorW12 d) (k : d → ℤ) (j : d) :
+    mFourierCoeff u k j = _root_.UnitAddTorus.mFourierCoeff
+      (fun x ↦ (PeriodicW12.value (component u j) x : ℂ)) k := by
+  rfl
+
 /-- Pair frequency `k` with the componentwise Fourier coefficient of `u`. -/
 def fourierDivergencePairing (u : PeriodicVectorW12 d) (k : d → ℤ) : ℂ :=
   ∑ i, (k i : ℂ) * mFourierCoeff u k i
+
+/-- Expanded finite-sum formula for the Fourier divergence pairing. -/
+theorem fourierDivergencePairing_eq_sum (u : PeriodicVectorW12 d) (k : d → ℤ) :
+    fourierDivergencePairing u k = ∑ i, (k i : ℂ) * mFourierCoeff u k i := by
+  rfl
 
 /-- The weak-divergence Fourier coefficient is exactly `(2 * π * I)` times the frequency
 pairing. -/

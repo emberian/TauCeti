@@ -51,29 +51,6 @@ variable {d : Type*} [Fintype d]
 
 attribute [local instance] Classical.decEq
 
-namespace PeriodicMeanZeroDivergenceFreeW12
-
-/-- The continuous inclusion of the mean-zero solenoidal energy space into vector-valued
-periodic `W¹,²`. -/
-def toPeriodicVectorW12L :
-    PeriodicMeanZeroDivergenceFreeW12 d →L[ℝ] PeriodicVectorW12 d :=
-  (periodicMeanZeroDivergenceFreeW12Submodule d).toSubmodule.subtypeL
-
-/-- The ambient periodic vector `W¹,²` class of an energy-space vector. -/
-def toPeriodicVectorW12 (u : PeriodicMeanZeroDivergenceFreeW12 d) : PeriodicVectorW12 d :=
-  toPeriodicVectorW12L u
-
-@[simp]
-theorem toPeriodicVectorW12L_apply (u : PeriodicMeanZeroDivergenceFreeW12 d) :
-    toPeriodicVectorW12L u = toPeriodicVectorW12 u := by
-  rw [toPeriodicVectorW12]
-
-theorem toPeriodicVectorW12_eq_coe (u : PeriodicMeanZeroDivergenceFreeW12 d) :
-    toPeriodicVectorW12 u = (u : PeriodicVectorW12 d) := by
-  rfl
-
-end PeriodicMeanZeroDivergenceFreeW12
-
 /-- The weak vector Dirichlet form restricted to the concrete mean-zero solenoidal energy
 space. -/
 def periodicEnergyDirichletFormL :
@@ -111,6 +88,11 @@ theorem periodicEnergyDirichletForm_eq_ambient
     (u v : PeriodicMeanZeroDivergenceFreeW12 d) :
     periodicEnergyDirichletForm u v =
       periodicVectorDirichletForm (u : PeriodicVectorW12 d) (v : PeriodicVectorW12 d) := by
+  rw [periodicEnergyDirichletForm, periodicEnergyDirichletFormL]
+  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.flip_apply,
+    ContinuousLinearMap.precompR_apply, ContinuousLinearMap.compL_apply,
+    PeriodicMeanZeroDivergenceFreeW12.toPeriodicVectorW12L_apply,
+    PeriodicMeanZeroDivergenceFreeW12.toPeriodicVectorW12_eq_coe]
   change periodicVectorDirichletFormL (d := d) (u : PeriodicVectorW12 d)
     (v : PeriodicVectorW12 d) = periodicVectorDirichletForm (u : PeriodicVectorW12 d) v
   rw [periodicVectorDirichletFormL_apply_apply]

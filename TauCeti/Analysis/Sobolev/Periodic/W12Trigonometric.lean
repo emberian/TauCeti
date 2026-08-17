@@ -29,6 +29,8 @@ This supplies the finite-mode atoms used for trigonometric density in Layer 0, i
 ## Main declarations
 
 * `PeriodicW12.realMFourierAtom`: the real `W¹,²` atom with amplitude `a` and frequency `k`.
+* `PeriodicW12.realMFourierAtom_add` and `.realMFourierAtom_smul`: real linearity in the
+  complex amplitude.
 * `PeriodicW12.value_realMFourierAtom_ae`: its value representative.
 * `PeriodicW12.weakDeriv_realMFourierAtom_ae`: its sign-normalized coordinate weak derivative.
 -/
@@ -199,6 +201,20 @@ theorem realMFourierAtom_zero (k : d → ℤ) :
     realMFourierAtom (0 : ℂ) k = 0 := by
   rw [realMFourierAtom]
   simp
+
+/-- Additivity of a real Fourier atom in its complex amplitude. -/
+@[simp]
+theorem realMFourierAtom_add (a b : ℂ) (k : d → ℤ) :
+    realMFourierAtom (a + b) k = realMFourierAtom a k + realMFourierAtom b k := by
+  simp only [realMFourierAtom, Complex.add_re, Complex.add_im, add_smul]
+  abel
+
+/-- Real homogeneity of a real Fourier atom in its complex amplitude. -/
+@[simp]
+theorem realMFourierAtom_smul (r : ℝ) (a : ℂ) (k : d → ℤ) :
+    realMFourierAtom ((r : ℂ) * a) k = r • realMFourierAtom a k := by
+  simp only [realMFourierAtom, Complex.mul_re, Complex.mul_im, Complex.ofReal_re,
+    Complex.ofReal_im, zero_mul, sub_zero, add_zero, smul_sub, smul_smul]
 
 /-- The value class of a real Fourier atom has the expected real trigonometric representative. -/
 theorem value_realMFourierAtom_ae (a : ℂ) (k : d → ℤ) :

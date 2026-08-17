@@ -1,0 +1,298 @@
+/-
+Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+module
+
+public import TauCeti.Analysis.Sobolev.Periodic.VectorFourier
+public import TauCeti.Analysis.Sobolev.Periodic.VectorW12Density
+
+/-!
+# Finite Fourier--Galerkin spaces for periodic incompressible flow
+
+This file proves that finite Fourier truncation preserves both constraints defining the periodic
+energy space: zero mean and weak incompressibility.  The essential calculation is quotient-native.
+For a weakly divergence-free vector field, the diagonal weak derivatives of one real Fourier term
+sum to the real part of
+
+`(2 * π * I) * (sum i, k i * uHat k i) * mFourier k`,
+
+which vanishes by the previously proved Fourier characterization of weak divergence.
+
+For a finite frequency set `S`, real coefficient synthesis has finite-dimensional range in
+`PeriodicVectorW12`.  Pulling that range back to the mean-zero incompressible energy space gives a
+finite-dimensional closed Galerkin subspace.  The explicit Fourier truncations belong to these
+subspaces and converge in the full energy graph norm, so their union is dense.
+
+This is the first part of Layer 7, item 1, of the `IncompressibleFlows` roadmap.  It does **not**
+yet construct the canonical orthogonal projections, prove commutation with the Leray or Stokes
+operators, or extend nonlinear cancellation to the finite-dimensional evolution system.  In
+particular, arbitrary finite frequency sets are used only for synthesis and approximation; their
+real truncation maps are not claimed to be idempotent projections.
+
+## Main declarations
+
+* `PeriodicVectorW12.weakDivergence_fourierTerm_eq_zero`: one Fourier term preserves weak
+  incompressibility.
+* `PeriodicMeanZeroDivergenceFreeW12.fourierTruncation`: constraint-preserving energy truncation.
+* `periodicGalerkinSubmodule`: a finite-dimensional energy subspace at finite frequency support.
+* `dense_isFiniteGalerkinField`: graph-norm density of finite incompressible Fourier fields.
+-/
+
+public section
+
+noncomputable section
+
+namespace UnitAddTorus
+
+open MeasureTheory Filter Topology
+
+variable {d : Type*} [Fintype d]
+
+attribute [local instance] Classical.decEq
+attribute [local instance] unitAddTorusIsProbabilityMeasure
+
+namespace PeriodicVectorW12
+
+/-- The weak divergence of one Fourier term of a weakly divergence-free field vanishes. -/
+theorem weakDivergence_fourierTerm_eq_zero
+    (u : PeriodicVectorW12 d)
+    (hu : u ∈ periodicDivergenceFreeW12Submodule d) (k : d → ℤ) :
+    weakDivergence (fourierTerm u k) = 0 := by
+  have hpair : fourierDivergencePairing u k = 0 :=
+    (mem_periodicDivergenceFreeW12Submodule_iff_forall_fourierDivergencePairing_eq_zero u).mp
+      hu k
+  apply Lp.ext
+  have hall : ∀ᵐ x ∂volume, ∀ i : d,
+      weakJacobianEntry (fourierTerm u k) i i x =
+        (2 * Real.pi * Complex.I * (k i) *
+          mFourierCoeff u k i * _root_.UnitAddTorus.mFourier k x).re := by
+    simpa only [Set.mem_univ, forall_const] using
+      (Filter.eventually_all_finite Set.finite_univ).2 fun i _ ↦ by
+        rw [weakJacobianEntry_fourierTerm, PeriodicW12.fourierTerm_eq_realMFourierAtom]
+        have h := PeriodicW12.weakDeriv_realMFourierAtom_ae
+          (mFourierCoeff u k i) k i
+        filter_upwards [h] with x hx
+        simpa only [mFourierCoeff_apply_eq_mFourierCoeff] using hx
+  filter_upwards [hall,
+    Lp.coeFn_finsetSum Finset.univ
+      (fun i ↦ weakJacobianEntry (fourierTerm u k) i i),
+    Lp.coeFn_zero ℝ 2 volume] with x hx hsum hzero
+  rw [weakDivergence_eq_sum, hsum, hzero]
+  simp only [Finset.sum_apply, Pi.zero_apply]
+  simp_rw [hx]
+  calc
+    (∑ i, (2 * Real.pi * Complex.I * (k i) *
+        mFourierCoeff u k i * _root_.UnitAddTorus.mFourier k x).re) =
+        (∑ i, 2 * Real.pi * Complex.I * (k i) *
+          mFourierCoeff u k i * _root_.UnitAddTorus.mFourier k x).re := by
+      rw [Complex.re_sum]
+    _ = ((2 * Real.pi * Complex.I) * fourierDivergencePairing u k *
+        _root_.UnitAddTorus.mFourier k x).re := by
+      apply congrArg Complex.re
+      rw [fourierDivergencePairing_eq_sum, Finset.mul_sum, Finset.sum_mul]
+      apply Finset.sum_congr rfl
+      intro i hi
+      ring
+    _ = 0 := by rw [hpair]; norm_num
+
+/-- Real finite Fourier synthesis with one coefficient per component and selected frequency. -/
+def realTrigonometricSynthesis (S : Finset (d → ℤ)) :
+    (d → S → ℂ) →ₗ[ℝ] PeriodicVectorW12 d where
+  toFun a := ofComponents fun j ↦
+    ∑ k : S, PeriodicW12.realMFourierAtom (a j k) k.1
+  map_add' a b := by
+    apply ext_component
+    intro j
+    rw [component_ofComponents, ← componentL_apply, map_add]
+    simp only [Pi.add_apply, PeriodicW12.realMFourierAtom_add, Finset.sum_add_distrib,
+      componentL_apply, component_ofComponents]
+  map_smul' r a := by
+    apply ext_component
+    intro j
+    rw [component_ofComponents, ← componentL_apply, map_smul]
+    simp only [Pi.smul_apply, Complex.real_smul, PeriodicW12.realMFourierAtom_smul,
+      componentL_apply, component_ofComponents]
+    rw [Finset.smul_sum]
+    rfl
+
+/-- The finite-dimensional ambient vector trigonometric subspace supported in `S`. -/
+def realTrigonometricSubmodule (S : Finset (d → ℤ)) :
+    Submodule ℝ (PeriodicVectorW12 d) :=
+  (realTrigonometricSynthesis S).range
+
+noncomputable instance finiteDimensional_realTrigonometricSubmodule
+    (S : Finset (d → ℤ)) :
+    FiniteDimensional ℝ (realTrigonometricSubmodule S) :=
+  FiniteDimensional.of_surjective (realTrigonometricSynthesis S).rangeRestrict
+    (LinearMap.surjective_rangeRestrict _)
+
+/-- A finite Fourier truncation belongs to its corresponding ambient trigonometric subspace. -/
+theorem fourierTruncation_mem_realTrigonometricSubmodule
+    (u : PeriodicVectorW12 d) (S : Finset (d → ℤ)) :
+    fourierTruncation u S ∈ realTrigonometricSubmodule S := by
+  let a : d → S → ℂ := fun j k ↦
+    _root_.UnitAddTorus.mFourierCoeff
+      (fun x ↦ (PeriodicW12.value (component u j) x : ℂ)) k.1
+  refine ⟨a, ?_⟩
+  apply ext_component
+  intro j
+  rw [component_fourierTruncation]
+  change (ofComponents (fun j ↦
+    ∑ k : S, PeriodicW12.realMFourierAtom (a j k) k.1)).component j = _
+  rw [component_ofComponents]
+  rw [PeriodicW12.fourierTruncation_eq_sum]
+  simp only [PeriodicW12.fourierTerm_eq_realMFourierAtom, a]
+  exact Finset.sum_coe_sort S (fun k : d → ℤ ↦
+    PeriodicW12.realMFourierAtom
+      (_root_.UnitAddTorus.mFourierCoeff
+        (fun x ↦ (PeriodicW12.value (component u j) x : ℂ)) k) k)
+
+/-- One Fourier term of a weakly divergence-free field is weakly divergence-free. -/
+theorem fourierTerm_mem_periodicDivergenceFreeW12Submodule
+    (u : PeriodicVectorW12 d)
+    (hu : u ∈ periodicDivergenceFreeW12Submodule d) (k : d → ℤ) :
+    fourierTerm u k ∈ periodicDivergenceFreeW12Submodule d := by
+  rw [mem_periodicDivergenceFreeW12Submodule_iff]
+  exact weakDivergence_fourierTerm_eq_zero u hu k
+
+/-- Every finite Fourier truncation preserves weak incompressibility. -/
+theorem fourierTruncation_mem_periodicDivergenceFreeW12Submodule
+    (u : PeriodicVectorW12 d)
+    (hu : u ∈ periodicDivergenceFreeW12Submodule d) (S : Finset (d → ℤ)) :
+    fourierTruncation u S ∈ periodicDivergenceFreeW12Submodule d := by
+  rw [fourierTruncation_eq_sum]
+  exact Submodule.sum_mem _ fun k hk ↦
+    fourierTerm_mem_periodicDivergenceFreeW12Submodule u hu k
+
+end PeriodicVectorW12
+
+namespace PeriodicMeanZeroDivergenceFreeW12
+
+/-- One Fourier term, bundled in the mean-zero incompressible energy space. -/
+def fourierTerm (u : PeriodicMeanZeroDivergenceFreeW12 d) (k : d → ℤ) :
+    PeriodicMeanZeroDivergenceFreeW12 d :=
+  ⟨PeriodicVectorW12.fourierTerm (u : PeriodicVectorW12 d) k, by
+    apply (mem_periodicMeanZeroDivergenceFreeW12Submodule_iff_mean_weakDivergence _).mpr
+    exact ⟨PeriodicVectorW12.mean_fourierTerm_eq_zero _ (mean_eq_zero u) k,
+      PeriodicVectorW12.weakDivergence_fourierTerm_eq_zero
+        (u : PeriodicVectorW12 d)
+        ((mem_periodicDivergenceFreeW12Submodule_iff _).mpr
+          ((mem_periodicMeanZeroDivergenceFreeW12Submodule_iff_mean_weakDivergence _).mp
+            u.2).2) k⟩⟩
+
+@[simp]
+theorem coe_fourierTerm (u : PeriodicMeanZeroDivergenceFreeW12 d) (k : d → ℤ) :
+    (fourierTerm u k : PeriodicVectorW12 d) =
+      PeriodicVectorW12.fourierTerm (u : PeriodicVectorW12 d) k := by
+  rfl
+
+/-- Finite Fourier truncation in the mean-zero incompressible energy space. -/
+def fourierTruncation (u : PeriodicMeanZeroDivergenceFreeW12 d)
+    (S : Finset (d → ℤ)) : PeriodicMeanZeroDivergenceFreeW12 d :=
+  ∑ k ∈ S, fourierTerm u k
+
+@[simp]
+theorem coe_fourierTruncation (u : PeriodicMeanZeroDivergenceFreeW12 d)
+    (S : Finset (d → ℤ)) :
+    (fourierTruncation u S : PeriodicVectorW12 d) =
+      PeriodicVectorW12.fourierTruncation (u : PeriodicVectorW12 d) S := by
+  rw [← toPeriodicVectorW12_eq_coe, ← toPeriodicVectorW12L_apply]
+  rw [fourierTruncation, map_sum, PeriodicVectorW12.fourierTruncation_eq_sum]
+  apply Finset.sum_congr rfl
+  intro k hk
+  rw [toPeriodicVectorW12L_apply, toPeriodicVectorW12_eq_coe, coe_fourierTerm]
+
+/-- Energy-space Fourier terms sum unconditionally in the full graph norm. -/
+theorem hasSum_fourierTerm (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    HasSum (fourierTerm u) u := by
+  change Tendsto (fourierTruncation u) atTop (nhds u)
+  apply tendsto_subtype_rng.mpr
+  simpa only [coe_fourierTruncation] using
+    PeriodicVectorW12.tendsto_fourierTruncation (u : PeriodicVectorW12 d)
+
+/-- The finite energy-space Fourier truncations converge in the full graph norm. -/
+theorem tendsto_fourierTruncation (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    Tendsto (fourierTruncation u) atTop (nhds u) :=
+  hasSum_fourierTerm u
+
+end PeriodicMeanZeroDivergenceFreeW12
+
+/-- The finite-frequency Galerkin subspace of the mean-zero incompressible energy space. -/
+def periodicGalerkinSubmodule (S : Finset (d → ℤ)) :
+    Submodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) :=
+  (PeriodicVectorW12.realTrigonometricSubmodule S).comap
+    (periodicMeanZeroDivergenceFreeW12Submodule d).toSubmodule.subtype
+
+theorem mem_periodicGalerkinSubmodule_iff
+    (u : PeriodicMeanZeroDivergenceFreeW12 d) (S : Finset (d → ℤ)) :
+    u ∈ periodicGalerkinSubmodule S ↔
+      (u : PeriodicVectorW12 d) ∈ PeriodicVectorW12.realTrigonometricSubmodule S := by
+  rfl
+
+private def periodicGalerkinToRealTrigonometricSubmodule
+    (S : Finset (d → ℤ)) :
+    periodicGalerkinSubmodule S →ₗ[ℝ]
+      PeriodicVectorW12.realTrigonometricSubmodule S where
+  toFun u := ⟨((u : PeriodicMeanZeroDivergenceFreeW12 d) : PeriodicVectorW12 d), u.2⟩
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+private theorem periodicGalerkinToRealTrigonometricSubmodule_injective
+    (S : Finset (d → ℤ)) :
+    Function.Injective (periodicGalerkinToRealTrigonometricSubmodule S) := by
+  intro u v huv
+  rcases u with ⟨⟨u, huE⟩, huG⟩
+  rcases v with ⟨⟨v, hvE⟩, hvG⟩
+  change (⟨u, _⟩ : PeriodicVectorW12.realTrigonometricSubmodule S) = ⟨v, _⟩ at huv
+  have huv' : u = v := congrArg Subtype.val huv
+  subst v
+  rfl
+
+noncomputable instance finiteDimensional_periodicGalerkinSubmodule
+    (S : Finset (d → ℤ)) :
+    FiniteDimensional ℝ (periodicGalerkinSubmodule S) :=
+  FiniteDimensional.of_injective
+    (periodicGalerkinToRealTrigonometricSubmodule S)
+    (periodicGalerkinToRealTrigonometricSubmodule_injective S)
+
+/-- A finite-frequency truncation belongs to its corresponding Galerkin subspace. -/
+theorem PeriodicMeanZeroDivergenceFreeW12.fourierTruncation_mem_periodicGalerkinSubmodule
+    (u : PeriodicMeanZeroDivergenceFreeW12 d) (S : Finset (d → ℤ)) :
+    fourierTruncation u S ∈ periodicGalerkinSubmodule S := by
+  rw [mem_periodicGalerkinSubmodule_iff, coe_fourierTruncation]
+  exact PeriodicVectorW12.fourierTruncation_mem_realTrigonometricSubmodule
+    (u : PeriodicVectorW12 d) S
+
+/-- The finite-frequency Galerkin subspace, bundled as a closed subspace. -/
+def periodicGalerkinClosedSubmodule (S : Finset (d → ℤ)) :
+    ClosedSubmodule ℝ (PeriodicMeanZeroDivergenceFreeW12 d) where
+  toSubmodule := periodicGalerkinSubmodule S
+  isClosed' := Submodule.closed_of_finiteDimensional _
+
+/-- An energy field with finite Galerkin support. -/
+def IsFiniteGalerkinField (u : PeriodicMeanZeroDivergenceFreeW12 d) : Prop :=
+  ∃ S : Finset (d → ℤ), u ∈ periodicGalerkinSubmodule S
+
+/-- Finite-frequency mean-zero incompressible fields are dense in the full energy graph norm. -/
+theorem dense_isFiniteGalerkinField :
+    Dense {u : PeriodicMeanZeroDivergenceFreeW12 d | IsFiniteGalerkinField u} := by
+  rw [dense_iff_closure_eq]
+  apply Set.eq_univ_of_forall
+  intro u
+  exact mem_closure_of_tendsto
+    (PeriodicMeanZeroDivergenceFreeW12.tendsto_fourierTruncation u)
+    (Filter.Eventually.of_forall fun S ↦
+      ⟨S, PeriodicMeanZeroDivergenceFreeW12.fourierTruncation_mem_periodicGalerkinSubmodule
+        u S⟩)
+
+/-- Explicit graph-metric approximation by a field in one finite-dimensional Galerkin space. -/
+theorem exists_periodicGalerkinSubmodule_dist_lt
+    (u : PeriodicMeanZeroDivergenceFreeW12 d) {ε : ℝ} (hε : 0 < ε) :
+    ∃ (S : Finset (d → ℤ)) (v : PeriodicMeanZeroDivergenceFreeW12 d),
+      v ∈ periodicGalerkinSubmodule S ∧ dist u v < ε := by
+  obtain ⟨v, ⟨S, hvS⟩, hv⟩ :=
+    (dense_isFiniteGalerkinField (d := d)).exists_dist_lt u hε
+  exact ⟨S, v, hvS, hv⟩
+
+end UnitAddTorus

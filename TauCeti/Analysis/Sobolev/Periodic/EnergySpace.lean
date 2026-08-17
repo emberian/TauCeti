@@ -281,6 +281,15 @@ theorem mem_periodicMeanZeroDivergenceFreeW12Submodule_iff (u : PeriodicVectorW1
     mem_periodicMeanZeroVectorW12Submodule_iff_representative,
     mem_periodicDivergenceFreeW12Submodule_iff_weaklyDivergenceFree]
 
+/-- Quotient-native membership in the mean-zero incompressible energy space. -/
+theorem mem_periodicMeanZeroDivergenceFreeW12Submodule_iff_mean_weakDivergence
+    (u : PeriodicVectorW12 d) :
+    u ∈ periodicMeanZeroDivergenceFreeW12Submodule d ↔
+      PeriodicVectorW12.mean u = 0 ∧ PeriodicVectorW12.weakDivergence u = 0 := by
+  rw [periodicMeanZeroDivergenceFreeW12Submodule, ClosedSubmodule.mem_inf,
+    mem_periodicMeanZeroVectorW12Submodule_iff,
+    mem_periodicDivergenceFreeW12Submodule_iff]
+
 /-- Every constant vector field belongs to the larger divergence-free space. -/
 theorem periodicVectorW12_const_mem_divergenceFree (c : EuclideanSpace ℝ d) :
     PeriodicVectorW12.const c ∈ periodicDivergenceFreeW12Submodule d := by
@@ -375,6 +384,25 @@ instance : InnerProductSpace ℝ (PeriodicMeanZeroDivergenceFreeW12 d) where
 
 instance : CompleteSpace (PeriodicMeanZeroDivergenceFreeW12 d) :=
   (periodicMeanZeroDivergenceFreeW12Submodule d).isClosed.completeSpace_coe
+
+/-- The continuous inclusion of the mean-zero solenoidal energy space into vector-valued
+periodic `W¹,²`. -/
+def toPeriodicVectorW12L :
+    PeriodicMeanZeroDivergenceFreeW12 d →L[ℝ] PeriodicVectorW12 d :=
+  (periodicMeanZeroDivergenceFreeW12Submodule d).toSubmodule.subtypeL
+
+/-- The ambient periodic vector `W¹,²` class of an energy-space vector. -/
+def toPeriodicVectorW12 (u : PeriodicMeanZeroDivergenceFreeW12 d) : PeriodicVectorW12 d :=
+  toPeriodicVectorW12L u
+
+@[simp]
+theorem toPeriodicVectorW12L_apply (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    toPeriodicVectorW12L u = toPeriodicVectorW12 u := by
+  rw [toPeriodicVectorW12]
+
+theorem toPeriodicVectorW12_eq_coe (u : PeriodicMeanZeroDivergenceFreeW12 d) :
+    toPeriodicVectorW12 u = (u : PeriodicVectorW12 d) := by
+  rfl
 
 /-- An energy-space element has zero quotient-level componentwise mean. -/
 theorem mean_eq_zero (u : PeriodicMeanZeroDivergenceFreeW12 d) :

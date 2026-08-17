@@ -139,6 +139,11 @@ def fourierTruncation (u : PeriodicVectorW12 d) (S : Finset (d → ℤ)) :
     PeriodicVectorW12 d :=
   ∑ k ∈ S, fourierTerm u k
 
+/-- A vector Fourier truncation is the finite sum of its vector Fourier terms. -/
+theorem fourierTruncation_eq_sum (u : PeriodicVectorW12 d) (S : Finset (d → ℤ)) :
+    fourierTruncation u S = ∑ k ∈ S, fourierTerm u k := by
+  rfl
+
 /-- Taking a component commutes with finite vector Fourier truncation. -/
 @[simp]
 theorem component_fourierTruncation (u : PeriodicVectorW12 d)
