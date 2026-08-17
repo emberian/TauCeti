@@ -19,12 +19,10 @@ these candidates unique almost everywhere.
 The diagonal trace of a weak-Jacobian candidate defines its weak divergence.  The relation
 `HasWeakDivergence u q` records a representative `q` only up to almost-everywhere equality, and
 `WeaklyDivergenceFree u` is consequently independent of the chosen Jacobian and divergence
-representatives.  An all-coordinate bounded scalar test class packages the distributional
-adjoint identity `∫ φ div u = -∫ ∇φ · u`.
-
-The scalar API does not yet expose congruence in the original field argument, so this file does
-not claim that these predicates are invariant under replacing `u` by an almost-everywhere equal
-field representative.
+representatives.  Scalar representative congruence also makes the weak gradient, Jacobian,
+divergence, and incompressibility predicates invariant under replacing the original field almost
+everywhere.  An all-coordinate bounded scalar test class packages the distributional adjoint
+identity `∫ φ div u = -∫ ∇φ · u`.
 
 The final results identify these representative-level operators with the smooth operators from
 `Flat.Basic`.  No nonlinear weak product, Sobolev-class transport, or energy cancellation is
@@ -86,6 +84,22 @@ theorem HasWeakJacobian.coordinate {u : VectorField d} {J : TensorField d}
     HasWeakCoordinateDerivative (fun x ↦ u x j) (fun x ↦ J x i j) i := by
   exact hJ i j
 
+/-- The weak-gradient relation depends only on the almost-everywhere class of the scalar field. -/
+theorem HasWeakGradient.congr_ae {f g : ScalarField d} {G : VectorField d}
+    (hG : HasWeakGradient f G) (hfg : f =ᵐ[volume] g) :
+    HasWeakGradient g G := by
+  intro i
+  exact (hG i).congr_ae hfg
+
+/-- The weak-Jacobian relation depends only on the almost-everywhere class of the vector field. -/
+theorem HasWeakJacobian.congr_ae {u v : VectorField d} {J : TensorField d}
+    (hJ : HasWeakJacobian u J) (huv : u =ᵐ[volume] v) :
+    HasWeakJacobian v J := by
+  intro i j
+  apply (hJ i j).congr_ae
+  filter_upwards [huv] with x hx
+  rw [hx]
+
 /-- The diagonal trace of a representative-level weak-Jacobian candidate. -/
 def weakDivergence (J : TensorField d) : ScalarField d :=
   fun x ↦ ∑ i, J x i i
@@ -116,6 +130,20 @@ def WeaklyDivergenceFree (u : VectorField d) : Prop :=
 theorem weaklyDivergenceFree_iff {u : VectorField d} :
     WeaklyDivergenceFree u ↔ HasWeakDivergence u 0 :=
   Iff.rfl
+
+/-- The weak-divergence relation depends only on the almost-everywhere class of the vector
+field. -/
+theorem HasWeakDivergence.congr_ae {u v : VectorField d} {q : ScalarField d}
+    (hq : HasWeakDivergence u q) (huv : u =ᵐ[volume] v) :
+    HasWeakDivergence v q := by
+  rcases hq with ⟨J, hJ, hqJ⟩
+  exact ⟨J, hJ.congr_ae huv, hqJ⟩
+
+/-- Weak incompressibility depends only on the almost-everywhere class of the vector field. -/
+theorem WeaklyDivergenceFree.congr_ae {u v : VectorField d}
+    (hu : WeaklyDivergenceFree u) (huv : u =ᵐ[volume] v) :
+    WeaklyDivergenceFree v :=
+  HasWeakDivergence.congr_ae hu huv
 
 /-- A scalar test field that is an admissible coordinate test in every direction. -/
 structure FlatScalarTestFunction (d : Type*) [Fintype d] [DecidableEq d] where
