@@ -44,6 +44,7 @@ open scoped BigOperators
 variable {d : Type*} [Fintype d]
 
 /-- Squared Euclidean norm of an integer-valued torus frequency. -/
+@[expose]
 def frequencyNormSq (k : d → ℤ) : ℝ :=
   ∑ i, (k i : ℝ) ^ 2
 
@@ -87,9 +88,18 @@ theorem frequencyNormSq_single [DecidableEq d] (i : d) :
 
 /-- One frequency's contribution to the Dirichlet energy in Mathlib's unit-period Fourier
 normalization. -/
+@[expose]
 def mFourierDirichletTerm (f : _root_.UnitAddTorus d → ℂ) (k : d → ℤ) : ℝ :=
   (2 * Real.pi) ^ 2 * frequencyNormSq k *
     ‖_root_.UnitAddTorus.mFourierCoeff f k‖ ^ 2
+
+/-- Expanded coordinate-sum form of one Fourier Dirichlet-energy term. -/
+theorem mFourierDirichletTerm_eq_sum
+    (f : _root_.UnitAddTorus d → ℂ) (k : d → ℤ) :
+    mFourierDirichletTerm f k =
+      (2 * Real.pi) ^ 2 * (∑ i, (k i : ℝ) ^ 2) *
+        ‖_root_.UnitAddTorus.mFourierCoeff f k‖ ^ 2 :=
+  rfl
 
 theorem mFourierDirichletTerm_nonneg (f : _root_.UnitAddTorus d → ℂ) (k : d → ℤ) :
     0 ≤ mFourierDirichletTerm f k := by
