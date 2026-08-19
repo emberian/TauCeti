@@ -25,6 +25,7 @@ bundled structure.
 
 * `IsCoercive.solutionOfInner`: the solution of the variational equation with forcing
   represented by `F`.
+* `IsCoercive.solutionOfFunctionalL`: the bounded linear solution operator on the strong dual.
 * `IsCoercive.apply_solutionOfInner_eq_inner`: the defining variational identity.
 * `IsCoercive.eq_solutionOfInner`: uniqueness of a vector satisfying the variational
   identity.
@@ -108,6 +109,16 @@ theorem exists_forall_eq_inner (hB : IsCoercive B) (F : V) :
 This is `solutionOfInner` applied to the Fréchet--Riesz representative of the functional. -/
 def solutionOfFunctional (hB : IsCoercive B) (ℓ : StrongDual ℝ V) : V :=
   solutionOfInner hB ((InnerProductSpace.toDual ℝ V).symm ℓ)
+
+/-- The Lax--Milgram solution as a bounded linear operator on the strong dual. -/
+def solutionOfFunctionalL (hB : IsCoercive B) : StrongDual ℝ V →L[ℝ] V :=
+  hB.continuousLinearEquivOfBilin.symm.toContinuousLinearMap.comp
+    (InnerProductSpace.toDual ℝ V).symm.toLinearIsometry.toContinuousLinearMap
+
+@[simp]
+theorem solutionOfFunctionalL_apply (hB : IsCoercive B) (ℓ : StrongDual ℝ V) :
+    solutionOfFunctionalL hB ℓ = solutionOfFunctional hB ℓ := by
+  rfl
 
 /-- The functional solution is obtained by solving against the Fréchet--Riesz representative. -/
 theorem solutionOfFunctional_def (hB : IsCoercive B) (ℓ : StrongDual ℝ V) :
